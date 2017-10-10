@@ -114,6 +114,7 @@ struct root_param3d1d : public param3d1d {
 			lambdaz_.resize(n_branch); 
 
 			for(size_type b=0;b<n_branch;++b){
+
 				size_type dofi=mf_datavi[b].nb_dof();
 				Curv_[b].resize(dofi); Curv_[b].clear();
 				Curv_[b].assign(dofi, 0.0);
@@ -129,8 +130,10 @@ struct root_param3d1d : public param3d1d {
 			}
 		} else {
 			rasm_curve_parameter(mf_datavi,Curv_,lambdax_,lambday_,lambdaz_);
-			for(size_type b=0;b<n_branch;++b)
-				gmm::scaled(Curv_[b],1.0/FILE_.real_value("d"));
+			cout<<"Curvatura = \n";
+			for(size_type i=0; i<mf_datavi[0].nb_dof();i++)
+				cout<<" "<<Curv_[0][i];
+			cout<<endl<<endl;
 		}
 
 

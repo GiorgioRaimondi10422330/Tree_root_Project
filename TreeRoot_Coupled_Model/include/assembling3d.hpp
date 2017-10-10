@@ -92,6 +92,7 @@ asm_tissue_bc
 	GMM_ASSERT1(mf_data.get_qdim()==1, "invalid data mesh fem (Qdim=1 required)");
 
 	std::vector<scalar_type> G(mf_data.nb_dof());
+	std::vector<scalar_type> P(mf_data.nb_dof());
 	std::vector<scalar_type> ones(mf_data.nb_dof(), 1.0);
 
 	// Define assembly for velocity bc (\Gamma_u)
@@ -102,7 +103,7 @@ asm_tissue_bc
 	assemU.push_mi(mim);
 	assemU.push_mf(mf_u);
 	assemU.push_mf(mf_data);
-	assemU.push_data(P0);
+	assemU.push_data(P);
 	assemU.push_data(coef);
 	assemU.push_vec(F);
 	assemU.push_mat(M);
@@ -125,6 +126,7 @@ asm_tissue_bc
 			assemP.assembly(mf_u.linked_mesh().region(BC[f].rg));
 		} 
 		else if (BC[f].label=="MIX") { // Robin BC
+			gmm::copy(gmm::scaled(ones, BC[f].value),P);
 			assemU.assembly(mf_u.linked_mesh().region(BC[f].rg));
 		}
 		else if (BC[f].label=="INT") { // Internal Node

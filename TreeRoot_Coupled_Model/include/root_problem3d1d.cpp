@@ -337,7 +337,7 @@ root_problem3d1d::build_vessel_boundary(void)
 				found = (i0 == Jv[jj].idx);
 				if (!found) jj++;
 			}
-			//cout << "Branch -" << branch << " added to junction " << jj << endl;
+			cout << "Branch -" << branch << " added to junction " << jj << endl;
 			Jv[jj].value += r_param.R(mimv, branch);
 			Jv[jj].branches.emplace_back(-branch);
 			GMM_ASSERT1(branch>0, 
@@ -854,10 +854,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter)
     		Ct[DOF]=(A+pow(abs(Pt_data[DOF])/rho/g, gam)  ) / A /kt;		
     	}
     	asm_mass_matrix_param(NLtt,mimt,mf_Ut,mf_Ut,mf_coeft,Ct);
-    	cout<<"Differenze con 1/Kt="<<1.0/kt<<"\n Ct=";
-    	for(size_type i=0; i<dof.coeft(); i=i+500)
-    		cout<<" "<<Ct[i];
-    	cout<<"\n\n";
+    	cout<<"Valore Nuovo "<<Ct[0]<<" Valore Vecchio"<<1.0/kt<<"\n\n";
 	}
 
     gmm::clear(Pt_data);

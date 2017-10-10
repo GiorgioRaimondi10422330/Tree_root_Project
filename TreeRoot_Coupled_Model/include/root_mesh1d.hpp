@@ -413,6 +413,10 @@ void rasm_curve_parameter(
 	Fuction to Compute the curvature given 3 nodes
 	K=4*Apar/(d(x,y)*d(y,z)*d(z,x))
 */
+/*! 
+	Fuction to Compute the curvature given 3 nodes
+	K=4*Apar/(d(x,y)*d(y,z)*d(z,x))
+*/
 template<typename Point3d>
 scalar_type
 curvature3d(
@@ -426,22 +430,21 @@ curvature3d(
 	scalar_type A=0.0;
 	vector_type XY(3);
 	vector_type XZ(3);
-	
+	vector_type V(3);
 	//compute distance of Points
-	dXY=sqrt((X[1]-Y[1])*(X[1]-Y[1])+(X[2]-Y[2])*(X[2]-Y[2])+(X[3]-Y[3])*(X[3]-Y[3]));
-	dYZ=sqrt((Z[1]-Y[1])*(Z[1]-Y[1])+(Z[2]-Y[2])*(Z[2]-Y[2])+(Z[3]-Y[3])*(Z[3]-Y[3]));
-	dZX=sqrt((X[1]-Z[1])*(X[1]-Z[1])+(X[2]-Z[2])*(X[2]-Z[2])+(X[3]-Z[3])*(X[3]-Z[3]));
-
+	dXY=sqrt((X[0]-Y[0])*(X[0]-Y[0])+(X[1]-Y[1])*(X[1]-Y[1])+(X[2]-Y[2])*(X[2]-Y[2]));
+	dYZ=sqrt((Z[0]-Y[0])*(Z[0]-Y[0])+(Z[1]-Y[1])*(Z[1]-Y[1])+(Z[2]-Y[2])*(Z[2]-Y[2]));
+	dZX=sqrt((X[0]-Z[0])*(X[0]-Z[0])+(X[1]-Z[1])*(X[1]-Z[1])+(X[2]-Z[2])*(X[2]-Z[2]));
 	//Compute Area of the parallelogram
 	for(int i=0;i<3;i++){
 		XY[i]=Y[i]-X[i];
 		XZ[i]=Z[i]-X[i];
 	}
+	V[0]=XY[1]*XZ[2]-XY[2]*XZ[1];
+	V[1]=XY[2]*XZ[0]-XY[0]*XZ[2];
+	V[2]=XY[0]*XZ[1]-XY[1]*XZ[0];
 
-	for(int i=0; i<3;i++){
-		A=A+(XY[i]*XZ[(i+1)%3]-XY[(i+1)%3]*XZ[i]);
-	}
-	A=A/2.0;
+	A=sqrt(V[0]*V[0]+V[1]*V[1]+V[2]*V[2])/2.0;
 
 	//Compute Curvature
 	K=4.0*A/dXY/dYZ/dZX;
@@ -584,8 +587,7 @@ import_pts_file(
 				base_node tmpn(tmpv[1], tmpv[2], tmpv[3]);
 				lpoints.push_back(tmpn);
 				if (tmp.compare("END_ARC") == 0) { thend = true; Nn[Nb-1]--; }
-			} 
-						
+			} 				
 		} /* end of inner while */
 		
 		// Insert the arc into the 1D mesh and build a new region for the corresponding branch
@@ -596,7 +598,11 @@ import_pts_file(
 			std::vector<size_type> ind(2);
 			size_type ii = (i==0) ? 0 : i+1;
 			size_type jj;
-			size_type ll= (i==1) ? 0 : i;
+			size_type ll= (i==2) ? 0 : i;
+
+			if(ii==2) ll=0;
+			else if(ii==0) ll=0;
+			else ll=ii-1;
 
 			if (ii == lpoints.size()-1) jj = 1;
 			else if (ii == 0) jj = 2;
@@ -620,7 +626,7 @@ import_pts_file(
 			}
 
 			//Compute Curvature
-			if(ii!=0 ){
+			if(ii!=0){
 				KK=curvature3d(lpoints[ll],lpoints[ii],lpoints[jj]);
 				if(ii==2){
 					Curv_b.push_back(KK);
@@ -641,6 +647,13 @@ import_pts_file(
 			ly_b.push_back(ly_t/lmod);
 			lz_b.push_back(lz_t/lmod);
 		} /* end of inner for */
+
+		cout<<"Curvatura Ramo\n";
+		for(size_type kk=0; kk<Curv_b.size();kk++){
+			cout<<" "<<Curv_b[kk];
+		}
+		cout<<"\n\n";
+
 		Curv.push_back(Curv_b);
 		lx.push_back(lx_b);
 		ly.push_back(ly_b);
@@ -648,6 +661,7 @@ import_pts_file(
 	} /* end of outer while */	
 	param.get_curve(Curv,lx,ly,lz);//Saving the parameters
 } /* end of import_pts_file */
+
 
 } /* end of namespace */
 #endif

@@ -176,7 +176,7 @@ import_pts_file(
 					tmpv[d++] = stof(tmp); 
 					bgeot::get_token(ist, tmp, 1023); 
 				}
-				if (d != 4) GMM_ASSERT1(0, "Points must have 3 coordinates");
+				if (d != 4) GMM_ASSERT1(0, "Points must have 3 coordinates, have "<<d<<" coordinate" );
 				base_node tmpn(tmpv[1], tmpv[2], tmpv[3]);
 				lpoints.push_back(tmpn);
 				if (tmp.compare("END_ARC") == 0) { thend = true; Nn[Nb-1]--; }
