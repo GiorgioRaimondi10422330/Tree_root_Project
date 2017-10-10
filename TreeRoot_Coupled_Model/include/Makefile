@@ -14,7 +14,7 @@
 
 include ../../Makefile.inc
 
-mCPPFLAGS=-I. -I$(mkGetFEMHome)/include
+mCPPFLAGS=-I. -I$(ROOT_INCLUDE)
 mCXXFLAGS=-std=c++11
 mOPTFLAGS=-O3 -DNDEBUG -march=native
 

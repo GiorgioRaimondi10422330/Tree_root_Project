@@ -1,10 +1,11 @@
 # Including generic Makefile.inc
 include ../../../Makefile.inc
 
-LIB= -lroot_problem3d1d -lgetfem 
-LIBDIR= -L../../lib -L/opt/getfem/lib
+LIB= $(ROOT_LIBRARY)
+LIBDIR= $(ROOT_LIBRARY_DIR)
+INC_DIR= $(ROOT_INCLUDE) -I.
+
 .PHONY= help all main run clean distclean fastclean
-INC_DIR= -I../../include  -I/opt/getfem/include
 .DEFAUL_GOAL: all
 
 all: main
