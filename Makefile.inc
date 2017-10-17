@@ -18,7 +18,10 @@ BOOST_INC_DIR = $(mkBoostInc)
 ROOT_INC_DIR = $(PROJECT_DIR)/TreeRoot_Coupled_Model/include
 # Path to Curved M3D1D library
 ROOT_LIB_DIR = $(PROJECT_DIR)/TreeRoot_Coupled_Model/lib
-
+# Path to Curved M3D1D include
+TIME_ROOT_INC_DIR = $(PROJECT_DIR)/TreeRoot_Time_solver/include
+# Path to Curved M3D1D library
+TIME_ROOT_LIB_DIR = $(PROJECT_DIR)/TreeRoot_Time_solver/lib
 
 
 # Specific Curved M3D1D Include list
@@ -27,6 +30,14 @@ ROOT_INCLUDE =-I$(ROOT_INC_DIR) -I$(GETFEM_INC_DIR)
 ROOT_LIBRARY =   -lroot_problem3d1d -lgetfem
 # Specific Curved M3D1D Library directory
 ROOT_LIBRARY_DIR =  -L$(ROOT_LIB_DIR) -L$(GETFEM_LIB_DIR)
+
+
+# Specific Curved M3D1D Include list
+TIME_ROOT_INCLUDE =-I$(TIME_ROOT_INC_DIR) -I$(GETFEM_INC_DIR) 
+# Specific Curved M3D1D Library list
+TIME_ROOT_LIBRARY =   -lroot_problem3d1d -lgetfem
+# Specific Curved M3D1D Library directory
+TIME_ROOT_LIBRARY_DIR =  -L$(TIME_ROOT_LIB_DIR) -L$(GETFEM_LIB_DIR)
 
 # Compiler and standard for the compiler
 CXX = g++
