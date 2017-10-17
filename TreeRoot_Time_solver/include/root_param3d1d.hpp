@@ -160,7 +160,7 @@ struct root_param3d1d : public param3d1d {
 			// Fill the data arrays
 			kt_.assign(dof_datat, ktval/rho_/g_);//---------------------------Tenuto conto di rho g------------
 			kv_.assign(dof_datav, kvval);
-			Q_.assign(dof_datav,  Qval);
+			Q_.assign(dof_datav,  Qval/rho_/g_);
 		} 
 		else {
 			// Import dimensional params from FILE_
@@ -177,7 +177,7 @@ struct root_param3d1d : public param3d1d {
 			kt_.assign(dof_datat, k_/mu_*P_/U_/d_/rho_/g_);//---------------------------Tenuto conto di rho g------------
 			for (auto r : R_){ // C++11-only!
 				kv_.emplace_back(pi/2.0/(Gamma_+2.0)/mu_*P_*d_/U_*r*r*r*r);
-				Q_.emplace_back(2.0*pi*Lp_*P_/U_*r);
+				Q_.emplace_back(2.0*pi*Lp_*P_/U_*r/tho_/g_);
 			}
 		}
 		A_ret_ = FILE_.real_value("A_ret","Costant for non linear conductivity term");
