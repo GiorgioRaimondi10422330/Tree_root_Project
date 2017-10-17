@@ -841,7 +841,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 	scalar_type g= r_param.g();
 	vector_type Ct(dof.coeft());
 	vector_type Bt(dof.coeft());
-
+	bool INIT_P0=false;
 	bool TIME_STEP=PARAM.int_value("SOLVE_TIME_STEP");
 
 	if(TIME_STEP){
@@ -849,14 +849,22 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 		be=r_param.beta_ret();
 		Tr=r_param.Theta_r();
 		Ts=r_param.Theta_s();
+		INIT_P0=PARAM.int_value("INIT_PRESSURE");
 	}
+
 	// Preparing vectors dimension
     gmm::resize(Pt_data,dof.coeft()); gmm::clear(Pt_data);
+    if(INIT_P0 && tempo==0 && iter==0)
+    		Pt_old_ITER.assign(r_param.p0(),dof.coeft());
+
+   	if(INIT_P0 && tempo==0)
+   		Pt_Prev.assign(r_param.p0(),dof.Pt());	    
+
     //Assembling conductivity non linear term
-    if(iter==0 && tempo==0){
+    if(iter==0 && tempo==0 && !INIT_P0){
 		asm_tissue_non_linear_darcy	(NLMtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
     }
-    else{
+    else {
 	    // Interpolating Pt_old on mf_coeft
     	getfem::interpolation(mf_Pt,mf_coeft,Pt_old_ITER,Pt_data);
 
@@ -865,14 +873,15 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
     	}
     	asm_tissue_non_linear_darcy(NLMtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
     	cout<<"1/Kt    Valore Nuovo "<<Ct[0]/kt<<" Valore Vecchio "<<1.0/kt<<"\n";
-    	if(TIME_STEP){
+    	if(TIME_STEP && (tempo!=0 || INIT_P0 )){
 	    	for(size_type DOF=0;DOF<dof.coeft();DOF++){
-	    		//Bt=- a*(Ts-Tr)*|psi|^(b-1)/(a+|psi|^b)^2*sign(psi)
+	    		//Bt=- a*(Ts-Tr)*b*|psi|^(b-1)/(a+|psi|^b)^2*sign(psi)
 	    		Bt[DOF]=(Ts-Tr)/(al+pow(abs(Pt_data[DOF])/rho/g, be))/(al+pow(abs(Pt_data[DOF])/rho/g, be));
-	    		Bt[DOF]=-Bt[DOF]*al*pow(abs(Pt_data[DOF])/rho/g, be-1.0)*abs(Pt_data[DOF])/Pt_data[DOF];    		
+	    		Bt[DOF]=-Bt[DOF]*al*pow(abs(Pt_data[DOF])/rho/g, be-1.0)*abs(Pt_data[DOF])/Pt_data[DOF]*be;    		
+	    		Porosity[DOF]=(Ts-Tr)*al/(al+pow(abs(Pt_data[DOF])/rho/g, be))+Tr;
 	    	}
 	    	asm_tissue_non_linear_richards(NLRtt,NLFtt,mimt, mf_Pt,mf_coeft,Pt_Prev,Bt,dT*rho*g);
-	    	cout<<"(Ts-Tr) Valore Nuovo "<<Bt[0]<<" Valore Vecchio "<<Ts-Tr<<"\n";
+	    	cout<<"Poros   Valore Nuovo "<<Porosity[0]<<" Valore Vecchio "<<Tr<<"\n";
 	    }
 	}
 
@@ -883,7 +892,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 
 ////////// Solve the problem ///////////////////////////////////////////    
 bool//
-root_problem3d1d::solve_iter(size_type iter)
+root_problem3d1d::solve_iter(size_type iter, size_type tempo)
 {
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Solving the monolithic system ... " << endl;
@@ -897,7 +906,7 @@ root_problem3d1d::solve_iter(size_type iter)
 		gmm::sub_matrix(CM, 
 			gmm::sub_interval(0, dof.Ut()), 
 			gmm::sub_interval(0, dof.Ut()))); 
-	if(PARAM.int_value("SOLVE_TIME_STEP")){
+	if(PARAM.int_value("SOLVE_TIME_STEP") && (  tempo!=0 || !(PARAM.int_value("INIT_PRESSURE"))  )){
 		gmm::add(NLRtt,
 			gmm::sub_matrix(CM,
 				gmm::sub_interval(dof.Ut(),dof.Pt()),
@@ -1084,8 +1093,7 @@ root_problem3d1d::solve_time(size_type tempo)
 
 	double time_end=gmm::uclock_sec() - time;
 
-	if((Error>minERR )&&(Max_iter>1 )&& !Saturated)
-	{
+	if((Error>minERR )&&(Max_iter>1 )&& !Saturated)	{
 		#ifdef M3D1D_VERBOSE_
 		cout<<"*---------------------------------------------------------------------------*"<<endl;
 		cout<<" The method doesn't converged for minumum Increment Error="<<minERR<<" at Timestep= "<<dT*tempo<<endl;
@@ -1128,6 +1136,7 @@ root_problem3d1d::solve(){
 		gmm::resize(NLRtt,dof.Pt(),dof.Pt()); 	gmm::clear(NLRtt);
 		gmm::resize(NLFtt,dof.Pt());			gmm::clear(NLFtt);
 		gmm::resize(Pt_Prev,dof.Pt());			gmm::clear(Pt_Prev);
+		gmm::resize(Porosity,dof.coeft());		gmm::clear(Porosity);
 		dT=PARAM.real_value("TIME_STEP","Give the increment time step value");
 		maxT=PARAM.real_value("MAX_TIME","Give the maximum interval of time in which solve the problem");
 	}
@@ -1284,6 +1293,14 @@ root_problem3d1d::export_vtk(const string & suff)
 		exp_Pv.exporting(mf_Pv);
 		exp_Pv.write_mesh();
 		exp_Pv.write_point_data(mf_Pv, Pv, "Pv");
+
+		#ifdef M3D1D_VERBOSE_
+		cout << "  Exporting Porosity ..." << endl;
+		#endif
+		vtk_export exp_Por(descr.OUTPUT+"Por"+suff+".vtk");
+		exp_Por.exporting(mf_coeft);
+		exp_Por.write_mesh();
+		exp_Por.write_point_data(mf_coeft, Porosity, "Por");
 
 		#ifdef M3D1D_VERBOSE_
 		cout << "... export done, visualize the data file with (for example) Paraview " << endl; 

@@ -80,7 +80,7 @@ asm_tissue_darcy_gravity
 	assemH.push_vec(F);
 	assemH.assembly(rg);
 
-	gmm::scaled(F,C);
+	gmm::scale(F,C);
 }
 
 
@@ -108,6 +108,33 @@ simple_compute_radius
 	size_type first_=dof_enum[0];
 	return R[first_];
 }
+
+template<typename VEC,typename MAT>
+void 
+asm_tissue_non_linear_darcy	
+(	 MAT & M,
+	 const mesh_im & mim,
+	 const mesh_fem & mf_u,
+	 const mesh_fem & mf_coef,
+	 const VEC & Ct,
+	 const scalar_type & kt,
+	 const size_type  & Iteration,
+	 const mesh_region & rg = mesh_region::all_convexes()
+	 ) 		
+{
+	GMM_ASSERT1(mf_u.get_qdim() > 1, 
+		"invalid data mesh fem for velocity (Qdim>1 required)");
+	GMM_ASSERT1(mf_coef.get_qdim() == 1, 
+		"invalid data mesh fem for coefficients (Qdim>1 required)");
+	if(Iteration==0){
+		asm_mass_matrix(M,mim,mf_u,rg);
+	}
+	else{
+		asm_mass_matrix_param(M,mim,mf_u,mf_u,mf_coef,Ct,rg);
+	}
+	gmm::scale(M,1.0/kt);
+}
+
 
 }//End Namespace
 

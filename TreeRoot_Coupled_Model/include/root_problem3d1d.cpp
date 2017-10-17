@@ -843,7 +843,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter)
     //Assembling conductivity non linear term
     if(iter==0){
 		getfem::asm_mass_matrix(NLtt, mimt, mf_Ut, mf_Ut);
-		gmm::scaled(NLtt, 1.0/kt);
+		asm_tissue_non_linear_darcy	(NLtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
     }
     else{
 
@@ -851,10 +851,10 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter)
     	getfem::interpolation(mf_Pt,mf_coeft,Pt_old,Pt_data);
 
     	for(size_type DOF=0; DOF<dof.coeft(); DOF++){
-    		Ct[DOF]=(A+pow(abs(Pt_data[DOF])/rho/g, gam)  ) / A /kt;		
+    		Ct[DOF]=(A+pow(abs(Pt_data[DOF])/rho/g, gam)  ) / A ;		
     	}
-    	asm_mass_matrix_param(NLtt,mimt,mf_Ut,mf_Ut,mf_coeft,Ct);
-    	cout<<"Valore Nuovo "<<Ct[0]<<" Valore Vecchio"<<1.0/kt<<"\n\n";
+    	asm_tissue_non_linear_darcy	(NLtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
+    	cout<<"Valore Nuovo "<<Ct[0]/kt<<" Valore Vecchio "<<1.0/kt<<"\n\n";
 	}
 
     gmm::clear(Pt_data);

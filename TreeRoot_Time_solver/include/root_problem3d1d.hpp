@@ -139,6 +139,10 @@ protected:
 	scalar_type dT;
 	//! Maximum Time 
 	scalar_type maxT;
+	//! Porosity
+	vector_type Porosity;
+	//! Pressure Head
+	vector_type H;
 
 	// Aux methods for init
 	//! Import algorithm specifications
@@ -172,7 +176,7 @@ protected:
 	//! Build non linear Matrix NL
 	void assembly_nonlinear_mat(size_type iter=0, size_type tempo=0);
 	//! Solve the monolitic sistem for a given iteration of the fixed point method
-	bool solve_iter(size_type iter=0);
+	bool solve_iter(size_type iter=0, size_type tempo=0);
 	//! Solve prepare the monolitic system in order to solve a certain time step
 	bool solve_time(size_type tempo=0);
 
