@@ -1,0 +1,129 @@
+%======================================================================
+%   "Mixed Finite Element Methods for Coupled 3D/1D Curved Fluid Problems"
+%    Course on Advanced Programming for Scientific Computing
+%                 Politecnico di Milano
+%                    A.Y. 2014-2015
+%                 
+%               Copyright (C) 2017 Giorgio Raimondi
+%======================================================================
+%	FILE        : input.param
+%  DESCRIPTION : List of parameters for linear single-vessel benchmark
+%	AUTHOR      : Giorgio Raimondi <giorgio3.raimondi@mail.polimi.it>
+%	DATE        : May 2017
+%======================================================================
+%  FLAGS
+%===================================
+% Flag to import dimensionless param
+TEST_PARAM = 1;
+% Flag to export results
+VTK_EXPORT = 1;
+% Flag to import radius of different branches
+IMPORT_RADIUS = 0;
+% Flag to enable the curve model
+CURVE_PROBLEM = 0;
+% Flag to import the curve file (Remember to ENABLE CURVE_PROBLEM)
+IMPORT_CURVE = 0;
+% Output directory
+OUTPUT     = 'vtk/';
+%===================================
+%  MESH
+%===================================
+% Flags to build a regular 3d mesh
+TEST_GEOMETRY = 1;
+GT_T       = 'GT_PK(3,1)'; 
+NSUBDIV_T  = '[11,11,11]';  
+ORG_T      = '[0,0,0]'; 
+SIZES_T    = '[0.4,0.4,0.4]';  
+NOISED_T   = '0';
+% Path to import the 3d mesh
+MESH_FILET = ' '; 
+% Path to import the 1d list of points
+MESH_FILEV = './network2.pts'; 
+% Path to import the radius of branches
+RFILE='./radius.pts';
+%===================================
+%  GETFEM DESCRIPTORS
+%===================================
+% GetFem type for the 3D mesh
+MESH_TYPET  = 'GT_PK(3,1)';   
+% GetFem type for the 1D mesh
+MESH_TYPEV  = 'GT_PK(1,1)';        
+% GetFem type for the 3D Finite Element Methods
+FEM_TYPET   = 'FEM_RT0(3)';
+FEM_TYPET_P = 'FEM_PK_DISCONTINUOUS(3,0)';
+FEM_TYPET_DATA = 'FEM_PK(3,0)';
+% GetFem type for the 1D Finite Element Methods
+FEM_TYPEV   = 'FEM_PK(1,2)';  
+FEM_TYPEV_P = 'FEM_PK(1,1)';  
+FEM_TYPEV_DATA = 'FEM_PK(1,0)';  
+% GetFem type for the 3D Integration Method
+IM_TYPET    = 'IM_TETRAHEDRON(6)'; 
+% GetFem type for the 1D Integration Method
+IM_TYPEV    = 'IM_GAUSS1D(6)'; 
+% Solver for the monolithic 3D/1D linear system
+% direct:    'SuperLU'
+% iterative: 'CG','BiCGstab','GMRES','QMR','LSCG'
+SOLVE_METHOD = 'SuperLU';
+% Maximum number of iterations for iterative solvers
+MAXITER  = 100;
+% Residu for conjugate gradient
+RESIDUAL = 1E-16;    
+% Nb of discretisation point for 3D-1D interpolation
+NInt = 50;
+%===================================
+%  MODEL PARAMETERS
+%===================================
+% Max Dimension of the Domain (to adimensionalize Curvature)
+d  = 0.4;
+% Dimensionless conductivity of the tissue
+Kt = 2.4*1E-4 ;
+% Dimensionless conductivity of the capillary wall
+%Q  = 0;
+Q  = 2*1E-8;
+% Dimnsionless conductivity of the capillary bed
+Kv = 4.0*1E-7;
+% Dimensionless average radius of the capillary vessels []
+RADIUS = 0.04;      
+%===================================               
+%BOUNDARY CONDITIONS
+%===================================
+% Faces:   x=0  x=L  y=0  y=L  z=0  z=L
+% BC labels (DIR / MIX)
+BClabel = 'MIX  MIX  MIX  MIX  DIR  DIR'
+% BC values
+BCvalue = '0.0  0.0  0.0  0.0  -6027.0  -5948.0'
+% Coefficient for MIX condition
+BETA = 1.0E-15
+
+
+%===================================
+% Richards Coefficents
+%===================================
+% Flag for Saturated problem (if Saturated=1 is a linear problem)
+Saturated=0;
+% Flag for use of gravity term
+Gravity=1;
+% Density of the fluid [Kg/ m^3]
+rho=1000;
+% Costant for computing the non linear element of conductivity [-]
+A_ret=1E+6;
+% Exponent for computing the non linear element of conductivity [-]
+Gamma_ret=4.74;
+% Gravity accelleration [m/s]
+g=9.8;
+% Max number of Iteration used by the fixed point method
+Max_iter=100;
+% Min incremental error for convergence of the fixed point method
+minERR= 0.001;
+
+
+
+
+SOLVE_TIME_STEP=1;
+VTK_EXPORT_TIME=1;
+TIME_STEP=0.005;
+MAX_TIME=0.02;
+Alpha_ret=1E+6;
+Beta_ret=4.000;
+Theta_s=0.6;
+Theta_r=0.1;
