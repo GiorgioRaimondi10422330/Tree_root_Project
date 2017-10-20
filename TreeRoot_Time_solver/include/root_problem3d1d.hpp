@@ -167,7 +167,7 @@ protected:
 	void build_vessel_boundary(void);
 	// Aux methods for assembly
 	//! Build the monolithic matrix AM by blocks
-	void assembly_mat(void);
+	void assembly_mat(bool Q0=false);
 	//! Build the monolithic rhs FM by blocks
 	void assembly_rhs(void);
 	//! Assemble RHS source term for stand-alone tissue problem
@@ -176,9 +176,11 @@ protected:
 	//! Build non linear Matrix NL
 	void assembly_nonlinear_mat(size_type iter=0, size_type tempo=0);
 	//! Solve the monolitic sistem for a given iteration of the fixed point method
-	bool solve_iter(size_type iter=0, size_type tempo=0);
+	bool solve_iter(size_type tempo=0);
 	//! Solve prepare the monolitic system in order to solve a certain time step
 	bool solve_time(size_type tempo=0);
+	//! Set the initial condition
+	bool set_initial_condition(void);
 
 }; /* end of class problem3d1d */
 

@@ -240,7 +240,7 @@ root_problem3d1d::build_tissue_boundary (void)
 	}
 } 
 
-void //-------------------- DA MODIFICARE LE CONDIZIONI AL CONTORNO ----------------//
+void 
 root_problem3d1d::build_vessel_boundary(void)
 {
 	#ifdef M3D1D_VERBOSE_
@@ -532,7 +532,7 @@ root_problem3d1d::assembly(void)
 }
 
 void //--- Rimuoverei il termine di Assemblaggio Mtt ---//
-root_problem3d1d::assembly_mat(void)
+root_problem3d1d::assembly_mat(bool Q0)
 {
 	#ifdef M3D1D_VERBOSE_
 	cout << "Allocating AM, UM, FM ..." << endl;
@@ -656,8 +656,16 @@ root_problem3d1d::assembly_mat(void)
 	cout << "  Assembling exchange matrices ..." << endl;
 	#endif
 	bool NEWFORM = PARAM.int_value("NEW_FORMULATION");
+	vector_type Q;
+	//Used only during INITIAL condition
+	if(Q0){
+		Q.assign(dof.coeft(),0);
+	}
+	else{
+		Q=r_param.Q();
+	}
 	asm_exchange_mat(Btt, Btv, Bvt, Bvv,
-			mimv, mf_Pv, mf_coefv, Mbar, Mlin, r_param.Q(), NEWFORM);
+			mimv, mf_Pv, mf_coefv, Mbar, Mlin, Q, NEWFORM);
 
 	// Copying Btt
 	gmm::add(Btt, 
@@ -687,8 +695,8 @@ root_problem3d1d::assembly_mat(void)
 	gmm::clear(Bvt);  gmm::clear(Bvv);
 }
 
-void //-----------Modifica temporanea rimosso Fg---------------
-root_problem3d1d::assembly_rhs(void)//-Ho imposto il termine di gravità sul tessuto-//
+void 
+root_problem3d1d::assembly_rhs(void)
 {
 	#ifdef M3D1D_VERBOSE_
 	cout << "Assembling the monolithic rhs FM ... " << endl;
@@ -852,16 +860,14 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 		INIT_P0=PARAM.int_value("INIT_PRESSURE");
 	}
 
-	// Preparing vectors dimension
-    gmm::resize(Pt_data,dof.coeft()); gmm::clear(Pt_data);
-    if(INIT_P0 && tempo==0 && iter==0)
-    		Pt_old_ITER.assign(r_param.p0(),dof.coeft());
 
-   	if(INIT_P0 && tempo==0)
-   		Pt_Prev.assign(r_param.p0(),dof.Pt());	    
+	// Preparing vectors dimension
+   	cout<<" tempo= "<<tempo<<" , INIT_P0= "<<INIT_P0<<"\n";
+
+    gmm::resize(Pt_data,dof.coeft()); gmm::clear(Pt_data);
 
     //Assembling conductivity non linear term
-    if(iter==0 && tempo==0 && !INIT_P0){
+    if(iter==0 && tempo==0){
 		asm_tissue_non_linear_darcy	(NLMtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
     }
     else {
@@ -873,7 +879,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
     	}
     	asm_tissue_non_linear_darcy(NLMtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
     	cout<<"1/Kt    Valore Nuovo "<<Ct[0]/kt<<" Valore Vecchio "<<1.0/kt<<"\n";
-    	if(TIME_STEP && (tempo!=0 || INIT_P0 )){
+    	if(tempo!=0){
 	    	for(size_type DOF=0;DOF<dof.coeft();DOF++){
 	    		//Bt=- a*(Ts-Tr)*b*|psi|^(b-1)/(a+|psi|^b)^2*sign(psi)
 	    		Bt[DOF]=(Ts-Tr)/(al+pow(abs(Pt_data[DOF])/rho/g, be))/(al+pow(abs(Pt_data[DOF])/rho/g, be));
@@ -881,7 +887,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 	    		Porosity[DOF]=(Ts-Tr)*al/(al+pow(abs(Pt_data[DOF])/rho/g, be))+Tr;
 	    	}
 	    	asm_tissue_non_linear_richards(NLRtt,NLFtt,mimt, mf_Pt,mf_coeft,Pt_Prev,Bt,dT*rho*g);
-	    	cout<<"Poros   Valore Nuovo "<<Porosity[0]<<" Valore Vecchio "<<Tr<<"\n";
+	    	cout<<"Poros   Valore Nuovo "<<Porosity[0]<<" Valore Vecchio "<<Ts<<"\n";
 	    }
 	}
 
@@ -890,9 +896,44 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
     gmm::clear(Bt);
 }
 
+bool 
+root_problem3d1d::set_initial_condition(void){
+
+	bool INIT_P0=PARAM.int_value("INIT_PRESSURE");
+	bool solved=true;
+	if(INIT_P0){
+		#ifdef M3D1D_VERBOSE_
+		cout<<endl << " Setting initial condition (constant P0 in the ground) ..." << endl<<endl;
+		#endif
+		UM.assign(dof.tot(),0);
+		vector_type P0(dof.Pt(),r_param.p0());
+		gmm::copy(P0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut(),dof.Pt())));
+		gmm::clear(P0);
+	}
+	else{
+
+		#ifdef M3D1D_VERBOSE_
+		cout<<endl << " Setting initial condition (Ground without) ..." << endl<<endl;
+		#endif
+		bool Q0=true;
+		vector_type Uv0(dof.Uv()+dof.Pt(),0);
+		gmm::clear(AM);
+		root_problem3d1d::assembly_mat(Q0);
+
+		solved=solve_time(0);
+
+		gmm::copy(Uv0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut()+dof.Pt(),dof.Uv()+dof.Pv())));
+		gmm::clear(AM);
+		gmm::clear(Uv0);
+		root_problem3d1d::assembly_mat();
+	}
+
+	return solved;
+}
+
 ////////// Solve the problem ///////////////////////////////////////////    
 bool//
-root_problem3d1d::solve_iter(size_type iter, size_type tempo)
+root_problem3d1d::solve_iter( size_type tempo)
 {
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Solving the monolithic system ... " << endl;
@@ -906,7 +947,7 @@ root_problem3d1d::solve_iter(size_type iter, size_type tempo)
 		gmm::sub_matrix(CM, 
 			gmm::sub_interval(0, dof.Ut()), 
 			gmm::sub_interval(0, dof.Ut()))); 
-	if(PARAM.int_value("SOLVE_TIME_STEP") && (  tempo!=0 || !(PARAM.int_value("INIT_PRESSURE"))  )){
+	if(tempo!=0){
 		gmm::add(NLRtt,
 			gmm::sub_matrix(CM,
 				gmm::sub_interval(dof.Ut(),dof.Pt()),
@@ -1021,11 +1062,9 @@ root_problem3d1d::solve_iter(size_type iter, size_type tempo)
 	return true;
 }
 
-
 bool  
 root_problem3d1d::solve_time(size_type tempo)
 {
-
 	//Importing descriptors
 	size_type Max_iter = PARAM.int_value("Max_iter");
 	scalar_type minERR = PARAM.real_value("minERR");
@@ -1049,7 +1088,7 @@ root_problem3d1d::solve_time(size_type tempo)
 	cout<<"Solving iter=0"<<endl;
 	#endif
 	
-	if(!(solve_iter(N_iter))) 
+	if(!(solve_iter(tempo))) 
 		GMM_ASSERT1(0," At the iteration "<<N_iter<<" at time step "<<dT*tempo<<" the solver stopped");
 
 	if(Saturated)
@@ -1072,7 +1111,7 @@ root_problem3d1d::solve_time(size_type tempo)
 		assembly_nonlinear_mat(N_iter,tempo);
 
 		//Solving at Iteration:= N_iter
-		if(!(solve_iter(N_iter))) 
+		if(!(solve_iter(tempo))) 
 			GMM_ASSERT1(0," At the step "<<N_iter<<" the solver stopped");
 		
 		//Computing of relative Incremental Error
@@ -1098,13 +1137,13 @@ root_problem3d1d::solve_time(size_type tempo)
 		cout<<"*---------------------------------------------------------------------------*"<<endl;
 		cout<<" The method doesn't converged for minumum Increment Error="<<minERR<<" at Timestep= "<<dT*tempo<<endl;
 		cout<<"    Increment Error="<<Error<<endl;
-		cout<<"*---------------------------------------------------------------------------*"<<endl<<endl;
+		cout<<"*---------------------------------------------------------------------------*"<<endl<<endl<<endl;
 		#endif
 		solved= false;
 	} else{  
 		#ifdef M3D1D_VERBOSE_
 		cout<<"Method converged in "<<N_iter<<" iterations for time step "<<dT*tempo<<" with L2: error "<<Error<<"   *"<<endl;
-		cout << "* Time to solve the time iteration : " << time_end << " seconds               *"<<endl;
+		cout << "* Time to solve the time iteration : " << time_end << " seconds               *"<<endl<<endl<<endl;
 		#endif
 		solved= true;
 	}
@@ -1131,31 +1170,47 @@ root_problem3d1d::solve(){
 	bool EXPORT_TIME_STEP=PARAM.int_value("VTK_EXPORT_TIME");
 
 	double time_ = gmm::uclock_sec();	
+	size_type Tempo=0;
+	bool solved=true;
 
 	if(TIME_STEP){
+		//Allocating space for non linear TIME matrices
+
+		#ifdef M3D1D_VERBOSE_
+		cout << "Allocating Auxiliar Term NLRtt,NLFtt, Pt_Prev, Porosity..." << endl;
+		#endif
 		gmm::resize(NLRtt,dof.Pt(),dof.Pt()); 	gmm::clear(NLRtt);
 		gmm::resize(NLFtt,dof.Pt());			gmm::clear(NLFtt);
 		gmm::resize(Pt_Prev,dof.Pt());			gmm::clear(Pt_Prev);
 		gmm::resize(Porosity,dof.coeft());		gmm::clear(Porosity);
+		Porosity.assign(dof.coeft(),r_param.Theta_s());
+
+
 		dT=PARAM.real_value("TIME_STEP","Give the increment time step value");
 		maxT=PARAM.real_value("MAX_TIME","Give the maximum interval of time in which solve the problem");
+		solved=set_initial_condition();
+		if(EXPORT_TIME_STEP && TIME_STEP){
+			export_vtk("_time_"+std::to_string(Tempo)+"_");
+		}
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
+		Tempo++;
 	}
 	else{
-		dT=3;
-		maxT=1;
+		solve_time(Tempo);
 	}
 
-	size_type Tempo=0;
-	bool solved=true;
-
-	while((Tempo*dT<maxT)&&(solved)){
+	while((Tempo*dT<maxT) && (solved) && TIME_STEP){
+		#ifdef M3D1D_VERBOSE_
+			cout << "\n-----------------\n SOLVING TIME STEP "<<Tempo <<"\n-----------------\n"<< ;
+		#endif
 		solved=solve_time(Tempo);
 		if(solved){
 			gmm::clear(Pt_Prev);	
 			gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+			gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
 			if(EXPORT_TIME_STEP && TIME_STEP){
-				//string suff="time_"+std::on_string(tempo);
-				export_vtk("time_"+std::to_string(Tempo)+"_");
+				export_vtk("_time_"+std::to_string(Tempo)+"_");
 			}
 			Tempo++;
 		}
@@ -1293,14 +1348,15 @@ root_problem3d1d::export_vtk(const string & suff)
 		exp_Pv.exporting(mf_Pv);
 		exp_Pv.write_mesh();
 		exp_Pv.write_point_data(mf_Pv, Pv, "Pv");
-
-		#ifdef M3D1D_VERBOSE_
-		cout << "  Exporting Porosity ..." << endl;
-		#endif
-		vtk_export exp_Por(descr.OUTPUT+"Por"+suff+".vtk");
-		exp_Por.exporting(mf_coeft);
-		exp_Por.write_mesh();
-		exp_Por.write_point_data(mf_coeft, Porosity, "Por");
+		if(PARAM.int_value("SOLVE_TIME_STEP")){
+			#ifdef M3D1D_VERBOSE_
+			cout << "  Exporting Porosity ..." << endl;
+			#endif
+			vtk_export exp_Por(descr.OUTPUT+"Por"+suff+".vtk");
+			exp_Por.exporting(mf_coeft);
+			exp_Por.write_mesh();
+			exp_Por.write_point_data(mf_coeft, Porosity, "Por");
+		}
 
 		#ifdef M3D1D_VERBOSE_
 		cout << "... export done, visualize the data file with (for example) Paraview " << endl; 
