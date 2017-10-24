@@ -539,7 +539,6 @@ root_problem3d1d::assembly_mat(bool Q0)
 	#endif
 	gmm::resize(AM, dof.tot(), dof.tot()); gmm::clear(AM);
 	gmm::resize(UM, dof.tot()); gmm::clear(UM);
-	gmm::resize(FM, dof.tot()); gmm::clear(FM);
 	#ifdef M3D1D_VERBOSE_
 	cout << "Assembling the monolithic matrix AM ..." << endl;
 	#endif
@@ -659,7 +658,7 @@ root_problem3d1d::assembly_mat(bool Q0)
 	vector_type Q;
 	//Used only during INITIAL condition
 	if(Q0){
-		Q.assign(dof.coeft(),0);
+		Q.assign(dof.coefv(),0);
 	}
 	else{
 		Q=r_param.Q();
@@ -701,6 +700,7 @@ root_problem3d1d::assembly_rhs(void)
 	#ifdef M3D1D_VERBOSE_
 	cout << "Assembling the monolithic rhs FM ... " << endl;
 	#endif
+	gmm::resize(FM, dof.tot()); gmm::clear(FM);
 	#ifdef M3D1D_VERBOSE_
 	cout << "  Initializing RHS for FM ..." << endl;
 	#endif
@@ -913,18 +913,24 @@ root_problem3d1d::set_initial_condition(void){
 	else{
 
 		#ifdef M3D1D_VERBOSE_
-		cout<<endl << " Setting initial condition (Ground without) ..." << endl<<endl;
+		cout<<endl << " Setting initial condition (Ground without Root) ..." << endl<<endl;
 		#endif
 		bool Q0=true;
-		vector_type Uv0(dof.Uv()+dof.Pt(),0);
 		gmm::clear(AM);
+		#ifdef M3D1D_VERBOSE_
+		cout<<endl << " Assembling and solving uncoupled problem (Ground without Root) ..." << endl<<endl;
+		#endif
 		root_problem3d1d::assembly_mat(Q0);
 
 		solved=solve_time(0);
 
-		gmm::copy(Uv0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut()+dof.Pt(),dof.Uv()+dof.Pv())));
 		gmm::clear(AM);
-		gmm::clear(Uv0);
+		gmm::clear(CM);
+		gmm::clear(CFM);
+
+		#ifdef M3D1D_VERBOSE_
+		cout<<endl << " Reassembling AM again (Ground without Root) ..." << endl<<endl;
+		#endif
 		root_problem3d1d::assembly_mat();
 	}
 
@@ -1202,7 +1208,7 @@ root_problem3d1d::solve(){
 
 	while((Tempo*dT<maxT) && (solved) && TIME_STEP){
 		#ifdef M3D1D_VERBOSE_
-			cout << "\n-----------------\n SOLVING TIME STEP "<<Tempo <<"\n-----------------\n"<< ;
+			cout << "\n-----------------\n SOLVING TIME STEP "<<Tempo <<"\n-----------------\n" ;
 		#endif
 		solved=solve_time(Tempo);
 		if(solved){
