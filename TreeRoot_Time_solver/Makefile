@@ -18,6 +18,8 @@ all: library
 	$(MAKE) -C src/1_LinearSingleBranch
 	$(MAKE) -C src/2_Field_test_case
 	$(MAKE) -C src/3_Complex_Network
+	$(MAKE) -C src/4_Initial_P0
+	$(MAKE) -C src/5_Init_No_Root
 
 help:
 	@echo "make all: build the library and complile the test case"
@@ -32,10 +34,10 @@ library:
 	$(MAKE) -C include
 
 run: all
-	$(MAKE) -C src/2_Field_test_case run
+	$(MAKE) -C src/5_Init_No_Root run
 
 run3: all
-	$(MAKE) -C src/3_Complex_Network run
+	$(MAKE) -C src/5_Init_No_Root run
 	
 clean:
 	$(RM) -r *~ *.log
@@ -43,18 +45,23 @@ clean:
 	$(MAKE) -C src/1_LinearSingleBranch clean
 	$(MAKE) -C src/2_Field_test_case clean
 	$(MAKE) -C src/3_Complex_Network clean
+	$(MAKE) -C src/4_Initial_P0 clean
+	$(MAKE) -C src/5_Init_No_Root clean
 
 distclean: clean
 	$(MAKE) -C include distclean
 	$(MAKE) -C src/1_LinearSingleBranch distclean
 	$(MAKE) -C src/2_Field_test_case distclean
 	$(MAKE) -C src/3_Complex_Network distclean
+	$(MAKE) -C src/4_Initial_P0 distclean
+	$(MAKE) -C src/5_Init_No_Root distclean
+
 fast:	
 	$(MAKE) -C include fastclean
-	$(MAKE) -C src/2_Field_test_case fastclean
+	$(MAKE) -C src/5_Init_No_Root fastclean
 	$(MAKE) -C include
-	$(MAKE) -C src/2_Field_test_case
-	$(MAKE) -C src/2_Field_test_case run
+	$(MAKE) -C src/5_Init_No_Root
+	$(MAKE) -C src/5_Init_No_Root run
 	
 fast3:
 	$(MAKE) -C include fastclean

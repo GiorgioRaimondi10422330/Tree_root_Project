@@ -1064,6 +1064,7 @@ root_problem3d1d::solve_iter( size_type tempo)
 	gmm::clear(Bvt); gmm::clear(Bvv);
 	gmm::clear(Pt);  gmm::clear(Pv);  
 	gmm::clear(Uphi); gmm::clear(CFM);
+	gmm::clear(CM);
 	
 	return true;
 }
