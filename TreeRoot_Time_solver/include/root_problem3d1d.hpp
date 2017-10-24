@@ -143,6 +143,8 @@ protected:
 	vector_type Porosity;
 	//! Pressure Head
 	vector_type H;
+	//! Conductivity
+	vector_type Conductivity;
 
 	// Aux methods for init
 	//! Import algorithm specifications

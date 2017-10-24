@@ -876,6 +876,7 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 
     	for(size_type DOF=0; DOF<dof.coeft(); DOF++){
     		Ct[DOF]=(A+pow(abs(Pt_data[DOF])/rho/g, gam)) / A ;
+		Conductivity[DOF]=kt*A/(A+pow(abs(Pt_data[DOF])/rho/g, gam)) ;
     	}
     	asm_tissue_non_linear_darcy(NLMtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
     	cout<<"1/Kt    Valore Nuovo "<<Ct[0]/kt<<" Valore Vecchio "<<1.0/kt<<"\n";
@@ -900,36 +901,46 @@ bool
 root_problem3d1d::set_initial_condition(void){
 
 	bool INIT_P0=PARAM.int_value("INIT_PRESSURE");
+	bool EXPORT_TIME_STEP=PARAM.int_value("VTK_EXPORT_TIME");
+
 	bool solved=true;
 	if(INIT_P0){
 		#ifdef M3D1D_VERBOSE_
-		cout<<endl << " Setting initial condition (constant P0 in the ground) ..." << endl<<endl;
+		cout<<endl<<"----------------------------------------------------------\n" << " Setting initial condition (constant P0 in the ground) ...\n" <<"----------------------------------------------------------"<<  endl<<endl;
 		#endif
 		UM.assign(dof.tot(),0);
 		vector_type P0(dof.Pt(),r_param.p0());
 		gmm::copy(P0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut(),dof.Pt())));
 		gmm::clear(P0);
+		
+		if(EXPORT_TIME_STEP ){
+			export_vtk("_time_"+std::to_string(0)+"_");
+		}
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
 	}
 	else{
 
 		#ifdef M3D1D_VERBOSE_
-		cout<<endl << " Setting initial condition (Ground without Root) ..." << endl<<endl;
+		cout<<endl<<"----------------------------------------------------------\n"  << " Setting initial condition (Ground without Root) ...\n" <<"----------------------------------------------------------"<<  endl<<endl;
 		#endif
 		bool Q0=true;
 		gmm::clear(AM);
 		#ifdef M3D1D_VERBOSE_
-		cout<<endl << " Assembling and solving uncoupled problem (Ground without Root) ..." << endl<<endl;
+		cout<<endl <<"----------------------------------------------------------\n" << " Assembling and solving uncoupled problem (Ground without Root) ...\n" <<"----------------------------------------------------------"<<  endl<<endl;
 		#endif
 		root_problem3d1d::assembly_mat(Q0);
 
 		solved=solve_time(0);
 
-		gmm::clear(AM);
-		gmm::clear(CM);
-		gmm::clear(CFM);
+		if(EXPORT_TIME_STEP ){
+			export_vtk("_time_"+std::to_string(0)+"_");
+		}
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
 
 		#ifdef M3D1D_VERBOSE_
-		cout<<endl << " Reassembling AM again (Ground without Root) ..." << endl<<endl;
+		cout<<endl<<"----------------------------------------------------------\n" << " Reassembling AM again (Ground without Root) ...\n" <<"----------------------------------------------------------"<< endl<<endl;
 		#endif
 		root_problem3d1d::assembly_mat();
 	}
@@ -1084,32 +1095,35 @@ root_problem3d1d::solve_time(size_type tempo)
 	bool solved=false;
 	size_type shift=0;
 	size_type dofi=mf_Uvi[0].nb_dof(); 
+	if(tempo==0){
+		#ifdef M3D1D_VERBOSE_
+		cout<<"Assembling non linear tissue matrix"<<endl;
+		#endif
+		
+		assembly_nonlinear_mat(N_iter,tempo);
 
-	#ifdef M3D1D_VERBOSE_
-	cout<<"Assembling non linear tissue matrix"<<endl;
-	#endif
+		#ifdef M3D1D_VERBOSE_
+		cout<<"Solving iter=0"<<endl;
+		#endif
 	
-	assembly_nonlinear_mat(N_iter,tempo);
+		if(!(solve_iter(tempo))) 
+			GMM_ASSERT1(0," At the iteration "<<N_iter<<" at time step "<<dT*tempo<<" the solver stopped");
 
-	#ifdef M3D1D_VERBOSE_
-	cout<<"Solving iter=0"<<endl;
-	#endif
-	
-	if(!(solve_iter(tempo))) 
-		GMM_ASSERT1(0," At the iteration "<<N_iter<<" at time step "<<dT*tempo<<" the solver stopped");
+		if(Saturated)
+			solved=true;
 
-	if(Saturated)
-		solved=true;
+		#ifdef M3D1D_VERBOSE_
+		cout<<endl;
+		#endif
 
-	#ifdef M3D1D_VERBOSE_
-	cout<<endl;
-	#endif
-
-	// Update of iter, old pressure in the tissue
-	N_iter++;
-	gmm::copy(gmm::sub_vector(UM,
+		// Update of iter, old pressure in the tissue
+		gmm::copy(gmm::sub_vector(UM,
 					gmm::sub_interval( dof.Ut(), dof.Pt() ) ), 
 				Pt_old_ITER);
+	}
+
+	N_iter++;
+
 	while( Error>minERR  && N_iter<Max_iter && !Saturated ) {   
 		#ifdef M3D1D_VERBOSE_
 		cout<<"Solving iter "<<N_iter<<"  with minIncremental Error "<<minERR <<endl;
@@ -1170,8 +1184,9 @@ root_problem3d1d::solve(){
 	#endif
 
 	gmm::resize(CM, dof.tot(),dof.tot());  gmm::clear(CM);
-	gmm::resize(CFM,dof.tot());			   gmm::clear(CFM);
+	gmm::resize(CFM,dof.tot());	       gmm::clear(CFM);
 	gmm::resize(Pt_old_ITER,dof.Pt());     gmm::clear(Pt_old_ITER);
+	gmm::resize(Conductivity,dof.coeft()); gmm::clear(Conductivity);
 
 	bool TIME_STEP=PARAM.int_value("SOLVE_TIME_STEP");
 	bool EXPORT_TIME_STEP=PARAM.int_value("VTK_EXPORT_TIME");
@@ -1191,16 +1206,11 @@ root_problem3d1d::solve(){
 		gmm::resize(Pt_Prev,dof.Pt());			gmm::clear(Pt_Prev);
 		gmm::resize(Porosity,dof.coeft());		gmm::clear(Porosity);
 		Porosity.assign(dof.coeft(),r_param.Theta_s());
-
+		
 
 		dT=PARAM.real_value("TIME_STEP","Give the increment time step value");
 		maxT=PARAM.real_value("MAX_TIME","Give the maximum interval of time in which solve the problem");
 		solved=set_initial_condition();
-		if(EXPORT_TIME_STEP && TIME_STEP){
-			export_vtk("_time_"+std::to_string(Tempo)+"_");
-		}
-		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
-		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
 		Tempo++;
 	}
 	else{
@@ -1365,6 +1375,13 @@ root_problem3d1d::export_vtk(const string & suff)
 			exp_Por.write_point_data(mf_coeft, Porosity, "Por");
 		}
 
+		#ifdef M3D1D_VERBOSE_
+		cout << "  Exporting Conductivity ..." << endl;
+		#endif
+		vtk_export exp_Con(descr.OUTPUT+"Conduct"+suff+".vtk");
+		exp_Con.exporting(mf_coeft);
+		exp_Con.write_mesh();
+		exp_Con.write_point_data(mf_coeft, Conductivity, "Conduct");
 		#ifdef M3D1D_VERBOSE_
 		cout << "... export done, visualize the data file with (for example) Paraview " << endl; 
 		#endif
