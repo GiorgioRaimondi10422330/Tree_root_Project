@@ -901,10 +901,11 @@ bool
 root_problem3d1d::set_initial_condition(void){
 
 	bool INIT_P0=PARAM.int_value("INIT_PRESSURE");
+	bool INIT_H0=PARAM.int_value("INIT_H0");
 	bool EXPORT_TIME_STEP=PARAM.int_value("VTK_EXPORT_TIME");
 
 	bool solved=true;
-	if(INIT_P0){
+	if(INIT_P0 && !INIT_H0){
 		#ifdef M3D1D_VERBOSE_
 		cout<<endl<<"----------------------------------------------------------\n" << " Setting initial condition (constant P0 in the ground) ...\n" <<"----------------------------------------------------------"<<  endl<<endl;
 		#endif
@@ -918,6 +919,32 @@ root_problem3d1d::set_initial_condition(void){
 		}
 		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
 		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
+	}
+	else if(!INIT_P0 && INIT_H0){
+		#ifdef M3D1D_VERBOSE_
+		cout<<endl<<"----------------------------------------------------------\n" << " Setting initial condition (constant H0 in the ground) ...\n" <<"----------------------------------------------------------"<<  endl<<endl;
+		#endif
+		UM.assign(dof.tot(),0);
+		vector_type P0(dof.Pt(),r_param.h0());
+		scalar_type rho=r_param.rho();
+		scalar_type g=r_param.g();
+		bgeot::base_node N;
+		//for(getfem::mr_visitor mrv(mf_Pt.linked_mesh().region(rg)); !mrv.finished(); ++mrv){
+		for(size_type DOF=0; DOF<dof.Pt();DOF++){
+			N=mf_Pt.point_of_basic_dof(DOF);//z(DOF)=N[2](DOF)
+			P0[DOF]=P0[DOF]-rho*g*N[2];
+		}
+		gmm::copy(P0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut(),dof.Pt())));
+		gmm::clear(P0);
+		
+		if(EXPORT_TIME_STEP ){
+			export_vtk("_time_"+std::to_string(0)+"_");
+		}
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);	
+	}
+	else if(INIT_P0 && INIT_H0){
+		GMM_ASSERT1(0,"You can't impose initial constant pressure and initial constant hydraulic head\n")
 	}
 	else{
 

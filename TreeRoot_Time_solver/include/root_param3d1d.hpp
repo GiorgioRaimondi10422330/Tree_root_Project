@@ -62,6 +62,8 @@ struct root_param3d1d : public param3d1d {
 	scalar_type g_;
 	// Initial pressure value
 	scalar_type p0_;
+	// Initial Hydraulic Head
+	scalar_type h0_;
 	// Mesh tangent versor
 	vector<vector_type> lambdax_;
 	vector<vector_type> lambday_;
@@ -90,6 +92,7 @@ struct root_param3d1d : public param3d1d {
 		bool IMPORT_CURVE = FILE_.int_value("CURVE_PROBLEM");
 		bool TIME_STEP = FILE_.int_value("SOLVE_TIME_STEP");
 		bool INIT_P0;
+		bool INIT_H0;
 
 		#ifdef M3D1D_VERBOSE_
 		cout << "  Assembling dimensionless radius R'... "   << endl;
@@ -188,8 +191,12 @@ struct root_param3d1d : public param3d1d {
 			Theta_s_   =FILE_.real_value("Theta_s","Porosity of Saturated problem");
 			Theta_r_   =FILE_.real_value("Theta_r","Retention Porosity");
 			INIT_P0=FILE_.int_value("INIT_PRESSURE");
+			INIT_H0=FILE_.int_value("INIT_H0");
 			if(INIT_P0)
 				p0_=FILE_.real_value("P_INIT","Initial pressure condition");
+			if(INIT_H0){
+				h0_=FILE_.real_value("H_INIT","Initial Hydraulic Head condition");
+			}
 		}	
 
 		// Check values
@@ -248,6 +255,8 @@ struct root_param3d1d : public param3d1d {
 	inline vector_type & kt(void){return kt_;}
 	//! Get pressure initial condition
 	inline scalar_type & p0(void){return p0_;}
+	//! Get hydraulic head initial condition
+	inline scalar_type & h0(void){return h0_;}
 	//! Get vessel tangent versor x component
 	vector<vector_type> & lambdax (void) { return lambdax_; }
 	//! Get vessel tangent versor y component
