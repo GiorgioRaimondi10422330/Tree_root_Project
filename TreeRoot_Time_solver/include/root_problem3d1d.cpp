@@ -246,11 +246,10 @@ root_problem3d1d::build_vessel_boundary(void)
 	#ifdef M3D1D_VERBOSE_
 	cout << "Building vessel boundary ..." << endl;
 	#endif
-  try {
+	try {
 
 	dal::bit_vector junctions; // global idx of junctions vertices in meshv
 	dal::bit_vector extrema;   // global idx of extreme vertices in meshv
-
 	Jv.clear();
 	nb_extrema=0; 
 	nb_junctions=0;
@@ -263,7 +262,6 @@ root_problem3d1d::build_vessel_boundary(void)
 	dal::bit_vector nn = meshv.convex_index();
 	bgeot::size_type cv;
 	for (cv << nn; cv != bgeot::size_type(-1); cv << nn) {
-		
 		bgeot::pconvex_structure cvs = meshv.structure_of_convex(cv);
 		if (cvs->nb_points()>2) 
 			cerr << "Error: convex #" << cv << "has more than 2 vertices!" << endl;
@@ -340,8 +338,7 @@ root_problem3d1d::build_vessel_boundary(void)
 			cout << "Branch -" << branch << " added to junction " << jj << endl;
 			Jv[jj].value += r_param.R(mimv, branch);
 			Jv[jj].branches.emplace_back(-branch);
-			GMM_ASSERT1(branch>0, 
-				"Error in network labeling: -0 makes no sense");
+			GMM_ASSERT1(branch>0, "Error in network labeling: -0 makes no sense");
 		}
 		
 		if (meshv.convex_to_point(i1).size()==1){ 
@@ -589,6 +586,7 @@ root_problem3d1d::assembly_mat(bool Q0)
 
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
 		scalar_type Ri = r_param.R(mimv, i);
+		cout<<"R["<<i<<"]="<<Ri<<"\n";
 		scalar_type kvi= r_param.kv(mimv, i);
 		// Coefficient \pi^2*Ri'^4/\kappa_v *(1+Ci^2*Ri^2) //Adaptation to the curve model
 		vector_type ci(mf_coefvi[i].nb_dof());
@@ -914,11 +912,35 @@ root_problem3d1d::set_initial_condition(void){
 		gmm::copy(P0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut(),dof.Pt())));
 		gmm::clear(P0);
 		
+
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
+
+		if(PARAM.int_value("Saturated")){
+			Porosity.assign(dof.coeft(),r_param.Theta_s());
+			Conductivity.assign(dof.coeft(),r_param.kt(0));
+		}
+		else{
+			scalar_type alfa=r_param.alfa_ret();
+			scalar_type beta=r_param.beta_ret();
+			scalar_type A=r_param.A_ret();
+			scalar_type gamma=r_param.gamma_ret();
+			scalar_type Ts=r_param.Theta_s();
+			scalar_type Tr=r_param.Theta_r();
+			scalar_type rho=r_param.rho();
+			scalar_type kt=r_param.kt(0);
+			scalar_type g=r_param.g();
+			vector_type Pt_data(dof.coeft());
+	    	getfem::interpolation(mf_Pt,mf_coeft,Pt_old_ITER,Pt_data);
+
+			for(size_type i=0; i<dof.coeft(); i++){
+				Porosity[i]=alfa*(Ts-Tr)/(alfa+pow(abs(Pt_data[i]/rho/g),beta))+Tr;
+				Conductivity[i]=kt*A/(A+pow(abs(Pt_data[i]/rho/g),gamma));
+			}
+		}
 		if(EXPORT_TIME_STEP ){
 			export_vtk("_time_"+std::to_string(0)+"_");
 		}
-		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
-		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
 	}
 	else if(!INIT_P0 && INIT_H0){
 		#ifdef M3D1D_VERBOSE_
@@ -937,11 +959,35 @@ root_problem3d1d::set_initial_condition(void){
 		gmm::copy(P0,gmm::sub_vector(UM,gmm::sub_interval(dof.Ut(),dof.Pt())));
 		gmm::clear(P0);
 		
+
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
+		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);	
+
+		if(PARAM.int_value("Saturated")){
+			Porosity.assign(dof.coeft(),r_param.Theta_s());
+			Conductivity.assign(dof.coeft(),r_param.kt(0));
+		}
+		else{
+			scalar_type alfa=r_param.alfa_ret();
+			scalar_type beta=r_param.beta_ret();
+			scalar_type A=r_param.A_ret();
+			scalar_type gamma=r_param.gamma_ret();
+			scalar_type Ts=r_param.Theta_s();
+			scalar_type Tr=r_param.Theta_r();
+			scalar_type rho=r_param.rho();
+			scalar_type kt=r_param.kt(0);
+			scalar_type g=r_param.g();
+			vector_type Pt_data(dof.coeft());
+	    	getfem::interpolation(mf_Pt,mf_coeft,Pt_old_ITER,Pt_data);
+
+			for(size_type i=0; i<dof.coeft(); i++){
+				Porosity[i]=alfa*(Ts-Tr)/(alfa+pow(abs(Pt_data[i]/rho/g),beta))+Tr;
+				Conductivity[i]=kt*A/(A+pow(abs(Pt_data[i]/rho/g),gamma));
+			}
+		}
 		if(EXPORT_TIME_STEP ){
 			export_vtk("_time_"+std::to_string(0)+"_");
 		}
-		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
-		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);	
 	}
 	else if(INIT_P0 && INIT_H0){
 		GMM_ASSERT1(0,"You can't impose initial constant pressure and initial constant hydraulic head\n")
@@ -960,12 +1006,36 @@ root_problem3d1d::set_initial_condition(void){
 
 		solved=solve_time(0);
 
-		if(EXPORT_TIME_STEP ){
-			export_vtk("_time_"+std::to_string(0)+"_");
-		}
 		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
 		gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
 
+		if(PARAM.int_value("Saturated")){
+			Porosity.assign(dof.coeft(),r_param.Theta_s());
+			Conductivity.assign(dof.coeft(),r_param.kt(0));
+		}
+		else{
+			scalar_type alfa=r_param.alfa_ret();
+			scalar_type beta=r_param.beta_ret();
+			scalar_type A=r_param.A_ret();
+			scalar_type gamma=r_param.gamma_ret();
+			scalar_type Ts=r_param.Theta_s();
+			scalar_type Tr=r_param.Theta_r();
+			scalar_type rho=r_param.rho();
+			scalar_type kt=r_param.kt(0);
+			scalar_type g=r_param.g();
+			vector_type Pt_data(dof.coeft());
+	    	getfem::interpolation(mf_Pt,mf_coeft,Pt_old_ITER,Pt_data);
+
+			for(size_type i=0; i<dof.coeft(); i++){
+				Porosity[i]=alfa*(Ts-Tr)/(alfa+pow(abs(Pt_data[i]/rho/g),beta))+Tr;
+				Conductivity[i]=kt*A/(A+pow(abs(Pt_data[i]/rho/g),gamma));
+			}
+		}
+
+		if(EXPORT_TIME_STEP ){
+			export_vtk("_time_"+std::to_string(0)+"_");
+		}
+		
 		#ifdef M3D1D_VERBOSE_
 		cout<<endl<<"----------------------------------------------------------\n" << " Reassembling AM again (Ground without Root) ...\n" <<"----------------------------------------------------------"<< endl<<endl;
 		#endif
@@ -1001,7 +1071,10 @@ root_problem3d1d::solve_iter( size_type tempo)
 				gmm::sub_interval(dof.Ut(),dof.Pt())));
 	}
 	gmm::csc_matrix<scalar_type> A;
-	gmm::clean(CM, 1E-12);
+	scalar_type small_val=PARAM.real_value("SMALL_APPROSSIMATION");
+	if(small_val>1E-3)
+		small_val=1E-12;
+	gmm::clean(CM, small_val);
 	gmm::copy(CM, A);
 	gmm::clear(CM);
 	gmm::clear(NLMtt);
@@ -1217,6 +1290,7 @@ root_problem3d1d::solve(){
 
 	bool TIME_STEP=PARAM.int_value("SOLVE_TIME_STEP");
 	bool EXPORT_TIME_STEP=PARAM.int_value("VTK_EXPORT_TIME");
+	size_type EXPORT_STEP=PARAM.real_value("EXPORT_STEP");
 
 	double time_ = gmm::uclock_sec();	
 	size_type Tempo=0;
@@ -1232,13 +1306,13 @@ root_problem3d1d::solve(){
 		gmm::resize(NLFtt,dof.Pt());			gmm::clear(NLFtt);
 		gmm::resize(Pt_Prev,dof.Pt());			gmm::clear(Pt_Prev);
 		gmm::resize(Porosity,dof.coeft());		gmm::clear(Porosity);
-		Porosity.assign(dof.coeft(),r_param.Theta_s());
-		
 
 		dT=PARAM.real_value("TIME_STEP","Give the increment time step value");
 		maxT=PARAM.real_value("MAX_TIME","Give the maximum interval of time in which solve the problem");
 		solved=set_initial_condition();
 		Tempo++;
+		if(EXPORT_STEP==0)
+			EXPORT_STEP=1;
 	}
 	else{
 		solve_time(Tempo);
@@ -1253,7 +1327,7 @@ root_problem3d1d::solve(){
 			gmm::clear(Pt_Prev);	
 			gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_Prev);
 			gmm::copy(gmm::sub_vector(UM,gmm::sub_interval( dof.Ut(), dof.Pt() ) ), Pt_old_ITER);
-			if(EXPORT_TIME_STEP && TIME_STEP){
+			if(EXPORT_TIME_STEP && TIME_STEP && (Tempo%EXPORT_STEP==0)){
 				export_vtk("_time_"+std::to_string(Tempo)+"_");
 			}
 			Tempo++;
@@ -1378,7 +1452,7 @@ root_problem3d1d::export_vtk(const string & suff)
 		for(size_type i=0; i<nb_branches; ++i){
 			if(i>0) start += mf_Uvi[i-1].nb_dof();
 			length = mf_Uvi[i].nb_dof();
-			vtk_export exp_Uv(descr.OUTPUT+"Uv"+suff+std::to_string(i)+".vtk");
+			vtk_export exp_Uv(descr.OUTPUT+"Uv"+std::to_string(i)+suff+".vtk");
 			exp_Uv.exporting(mf_Uvi[i]);
 			exp_Uv.write_mesh();
 			exp_Uv.write_point_data(mf_Uvi[i], 
@@ -1409,6 +1483,22 @@ root_problem3d1d::export_vtk(const string & suff)
 		exp_Con.exporting(mf_coeft);
 		exp_Con.write_mesh();
 		exp_Con.write_point_data(mf_coeft, Conductivity, "Conduct");
+
+		bgeot::base_node N;
+		scalar_type rho=r_param.rho();
+		scalar_type g=r_param.g();
+		for(size_type DOF=0; DOF<dof.Pt();DOF++){
+			N=mf_Pt.point_of_basic_dof(DOF);//z(DOF)=N[2](DOF)
+			H[DOF]=P[DOF]/rho/g+N[2];
+		}
+		#ifdef M3D1D_VERBOSE_
+		cout << "  Exporting Hydraulic Head ..." << endl;
+		#endif
+		vtk_export exp_H(descr.OUTPUT+"H"+suff+".vtk");
+		exp_H.exporting(mf_Pt);
+		exp_H.write_mesh();
+		exp_H.write_point_data(mf_Pt, H, "H");
+
 		#ifdef M3D1D_VERBOSE_
 		cout << "... export done, visualize the data file with (for example) Paraview " << endl; 
 		#endif

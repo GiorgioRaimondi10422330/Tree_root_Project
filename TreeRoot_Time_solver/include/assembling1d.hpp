@@ -19,6 +19,7 @@
 #define M3D1D_ASSEMBLING_1D_HPP_
 #include <defines.hpp>
 #include <node.hpp>
+#include <root_assembling3d.hpp>
 #include <utilities.hpp>
 
 namespace getfem {
@@ -108,10 +109,9 @@ asm_network_bc
 	std::vector<scalar_type> ones(mf_data.nb_dof(), 1.0);
 
 	for (size_type bc=0; bc < BC.size(); bc++) {
-
 		size_type i = abs(BC[bc].branches[0]);
 		size_type start = i*mf_u[i].nb_dof();
-		scalar_type Ri = compute_radius(mim, mf_data, R, i);
+		scalar_type Ri = simple_compute_radius(mim, mf_data, R, i);
 
 		if (BC[bc].label=="DIR") { // Dirichlet BC
 			// Add gv contribution to Fv
@@ -173,8 +173,8 @@ asm_network_junctions
 	
 	for (size_type i=0; i<mf_u.size(); ++i){ /* branch loop */
 
-		scalar_type Ri = compute_radius(mim, mf_data, radius, i);
-		//cout << "Region " << i << " : radius=" << Ri << endl;
+		scalar_type Ri = simple_compute_radius(mim, mf_data, radius, i);
+		cout << "Region " << i << " : radius=" << Ri << endl;
 
 		for (size_type j=0; j<J_data.size(); ++j){
 
@@ -204,12 +204,20 @@ asm_network_junctions
 			first_=dof_enum[0];
 			last_ =dof_enum[fine-1];
 			dof_enum.clear();
-
+			//size_type start=0;
 			if (std::find(bb, be, i) != be){
+				//for(size_type branch=0; branch<i;branch++)
+				//	start=start+mf_u[branch].nb_dof();
+				cout<<"J["<<j<<"]= -pi*0.02*0.02=-"<<pi<<"*"<<Ri<<"*"<<Ri<<"="<<-pi*Ri*Ri<<"\n";
 				J(row, i*mf_u[i].nb_dof()+last_) -= pi*Ri*Ri; //col to be generalized!
 			}
+
 			// Inflow branch contribution
+			//start=0;
 			if (i!=0 && std::find(bb, be, -i) != be){
+				//for(size_type branch=0; branch<i;branch++)
+				//	start=start+mf_u[branch].nb_dof();
+				cout<<"J["<<j<<"]= pi*0.02*0.02="<<pi<<"*"<<Ri<<"*"<<Ri<<"="<<pi*Ri*Ri<<"\n";
 				J(row, i*mf_u[i].nb_dof()+first_) += pi*Ri*Ri;	//col to be generalized!
 			}
 		}
@@ -235,11 +243,13 @@ my_asm_network_bc
 	std::vector<scalar_type> ones(mf_data.nb_dof(), 1.0);
 
 	for (size_type bc=0; bc < BC.size(); bc++) {
-
+		cout<<"Sono alla condizione bc="<<bc<<" su "<<BC.size()<<" \n ";
 		size_type i = abs(BC[bc].branches[0]);
 		size_type start = i*mf_u[i].nb_dof();
-		scalar_type Ri = compute_radius(mim, mf_data, R, i);
-
+		//for(size_type branch=0;branch<i;branch++)
+		//	start=start+mf_u[branch].nb_dof();
+		scalar_type Ri = simple_compute_radius(mim, mf_data, R, i);
+		cout<<"Punto intermedio\n";
 		if (BC[bc].label=="DIR") { // Dirichlet BC
 			// Add gv contribution to Fv
 			scalar_type BCVal = BC[bc].value*pi*Ri*Ri;

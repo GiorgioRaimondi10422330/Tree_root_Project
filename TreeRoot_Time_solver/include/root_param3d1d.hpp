@@ -91,6 +91,7 @@ struct root_param3d1d : public param3d1d {
 		bool EXPORT_PARAM  = FILE_.int_value("EXPORT_PARAM");
 		bool IMPORT_CURVE = FILE_.int_value("CURVE_PROBLEM");
 		bool TIME_STEP = FILE_.int_value("SOLVE_TIME_STEP");
+		bool TAP_ROOT = FILE_.int_value("TAP_ROOT");
 		bool INIT_P0;
 		bool INIT_H0;
 
@@ -161,9 +162,9 @@ struct root_param3d1d : public param3d1d {
 			rho_= FILE_.real_value("rho","density of the fluid");
 			g_= FILE_.real_value("g","Gravity accelleration");
 			// Fill the data arrays
-			kt_.assign(dof_datat, ktval/rho_/g_);//---------------------------Tenuto conto di rho g------------
+			kt_.assign(dof_datat, ktval);//---------------------------Tenuto conto di rho g------------
 			kv_.assign(dof_datav, kvval);
-			Q_.assign(dof_datav,  Qval/rho_/g_);
+			Q_.assign(dof_datav,  Qval);
 		} 
 		else {
 			// Import dimensional params from FILE_
@@ -198,11 +199,21 @@ struct root_param3d1d : public param3d1d {
 				h0_=FILE_.real_value("H_INIT","Initial Hydraulic Head condition");
 			}
 		}	
+		if(TAP_ROOT){
+			size_type NUM_OF_TAP=FILE_.int_value("NUM_OF_TAP");
+			for (size_type b=0; b<n_branch; ++b){
+				for (getfem::mr_visitor mrv(mf_datav_.linked_mesh().region(b)); !mrv.finished(); ++mrv){
+					for (auto i : mf_datav_.ind_basic_dof_of_element(mrv.cv())){
+						if(NUM_OF_TAP>b)
+							Q_[i]=0.0000000;
+					}
+				}
+			}
+		}
 
 		// Check values
 		GMM_ASSERT1(kt_[0] != 0, "wrong tissue conductivity (kt>0 required)"); 
 		GMM_ASSERT1(kv_[0] != 0, "wrong vessel bed conductivity (kv>0 required)");
-		if (Q_[0] == 0) cout << "Warning: uncoupled problem (Q=0)" << endl;
 		
 		if (EXPORT_PARAM){
 			std::string ODIR = FILE_.string_value("OutputDir","OutputDirectory");
