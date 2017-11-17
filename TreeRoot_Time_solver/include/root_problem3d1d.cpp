@@ -1489,7 +1489,7 @@ root_problem3d1d::export_vtk(const string & suff)
 		scalar_type g=r_param.g();
 		for(size_type DOF=0; DOF<dof.Pt();DOF++){
 			N=mf_Pt.point_of_basic_dof(DOF);//z(DOF)=N[2](DOF)
-			H[DOF]=P[DOF]/rho/g+N[2];
+			H[DOF]=Pt[DOF]/rho/g+N[2];
 		}
 		#ifdef M3D1D_VERBOSE_
 		cout << "  Exporting Hydraulic Head ..." << endl;
