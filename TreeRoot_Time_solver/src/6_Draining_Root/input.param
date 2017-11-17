@@ -24,14 +24,14 @@ CURVE_PROBLEM = 0;
 % Flag to import the curve file (Remember to ENABLE CURVE_PROBLEM)
 IMPORT_CURVE = 0;
 % Output directory
-OUTPUT     = '/u/archive/laureandi/raimondi/Draining_Test_Long_T/';
+OUTPUT     = '/u/archive/laureandi/raimondi/Fast_T_Long/';
 %===================================
 %  MESH
 %===================================
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
-GT_T       = 'GT_PK(3,1)'; 
-NSUBDIV_T  = '[25,25,25]';  
+GT_T       = 'GT_PK(3,1)';
+NSUBDIV_T  = '[12,12,12]'; 
 ORG_T      = '[0,0,0]'; 
 SIZES_T    = '[0.5,0.5,0.5]';  
 NOISED_T   = '0';
