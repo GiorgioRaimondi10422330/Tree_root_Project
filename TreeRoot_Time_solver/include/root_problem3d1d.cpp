@@ -1287,7 +1287,7 @@ root_problem3d1d::solve(){
 	gmm::resize(CFM,dof.tot());	       gmm::clear(CFM);
 	gmm::resize(Pt_old_ITER,dof.Pt());     gmm::clear(Pt_old_ITER);
 	gmm::resize(Conductivity,dof.coeft()); gmm::clear(Conductivity);
-
+	gmm::resize(H,dof.Pt());		gmm::clear(H);
 	bool TIME_STEP=PARAM.int_value("SOLVE_TIME_STEP");
 	bool EXPORT_TIME_STEP=PARAM.int_value("VTK_EXPORT_TIME");
 	size_type EXPORT_STEP=PARAM.real_value("EXPORT_STEP");
