@@ -3,9 +3,14 @@ include ../../../Makefile.inc
 
 LIB= $(TIME_ROOT_LIBRARY)
 LIBDIR= $(TIME_ROOT_LIBRARY_DIR)
+<<<<<<< HEAD
 INC_DIR= $(TIME_ROOT_INCLUDE)
 
 .PHONY= help all main run clean distclean fastclean
+=======
+.PHONY= help all main run clean distclean fastclean
+INC_DIR= $(TIME_ROOT_INCLUDE)
+>>>>>>> f06168bb3a3ce2fa304ad5ffa9ef286c53cd6ed5
 .DEFAUL_GOAL: all
 
 all: main

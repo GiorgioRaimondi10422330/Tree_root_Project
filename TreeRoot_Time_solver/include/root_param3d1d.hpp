@@ -164,7 +164,7 @@ struct root_param3d1d : public param3d1d {
 			// Fill the data arrays
 			kt_.assign(dof_datat, ktval);//---------------------------Tenuto conto di rho g------------
 			kv_.assign(dof_datav, kvval);
-			Q_.assign(dof_datav,  Qval);
+			Q_.assign(dof_datav,  Qval/rho_/g_);
 		} 
 		else {
 			// Import dimensional params from FILE_
