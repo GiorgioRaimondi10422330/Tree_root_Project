@@ -24,14 +24,14 @@ CURVE_PROBLEM = 0;
 % Flag to import the curve file (Remember to ENABLE CURVE_PROBLEM)
 IMPORT_CURVE = 0;
 % Output directory
-OUTPUT     = '/u/archive/laureandi/raimondi/Fast_T_Long/';
+OUTPUT     = '/u/archive/laureandi/raimondi/T1/';
 %===================================
 %  MESH
 %===================================
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[12,12,12]'; 
+NSUBDIV_T  = '[17,17,17]'; 
 ORG_T      = '[0,0,0]'; 
 SIZES_T    = '[0.5,0.5,0.5]';  
 NOISED_T   = '0';
@@ -121,21 +121,21 @@ minERR= 0.001;
 
 SOLVE_TIME_STEP=1;
 VTK_EXPORT_TIME=1;
-EXPORT_STEP=25;
+EXPORT_STEP=5;
 TIME_STEP=1;
-MAX_TIME=600;
+MAX_TIME=100;
 Alpha_ret=10;
 Beta_ret=4.000;
 Theta_s=0.287;
 Theta_r=0.075;
 
 
-INIT_PRESSURE=0;
-INIT_H0=1;
+INIT_PRESSURE=1;
+INIT_H0=0;
 
 P_INIT=-5000.00;
 H_INIT=-5000.00;
 SMALL_APPROSSIMATION=1E-15;
 
 TAP_ROOT=1;
-NUM_OF_TAP=6;
+NUM_OF_TAP=7;
