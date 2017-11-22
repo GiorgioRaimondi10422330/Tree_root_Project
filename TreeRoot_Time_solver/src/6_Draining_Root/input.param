@@ -24,14 +24,14 @@ CURVE_PROBLEM = 0;
 % Flag to import the curve file (Remember to ENABLE CURVE_PROBLEM)
 IMPORT_CURVE = 0;
 % Output directory
-OUTPUT     = '/u/archive/laureandi/raimondi/T3/';
+OUTPUT     = '/u/archive/laureandi/raimondi/T4/';
 %===================================
 %  MESH
 %===================================
 % Flags to build a regular 3d mesh
 TEST_GEOMETRY = 1;
 GT_T       = 'GT_PK(3,1)';
-NSUBDIV_T  = '[50,50,50]'; 
+NSUBDIV_T  = '[25,25,25]'; 
 ORG_T      = '[0,0,0]'; 
 SIZES_T    = '[0.5,0.5,0.5]';  
 NOISED_T   = '0';
@@ -83,7 +83,7 @@ Q  = 2.2*1E-8;
 % Dimnsionless conductivity of the capillary bed
 Kv = 4.0*1E-7;
 % Dimensionless average radius of the capillary vessels []
-RADIUS = 0.04;      
+RADIUS = 0.02;      
 %===================================               
 %BOUNDARY CONDITIONS
 %===================================
@@ -122,16 +122,16 @@ minERR= 0.001;
 SOLVE_TIME_STEP=1;
 VTK_EXPORT_TIME=1;
 EXPORT_STEP=1;
-TIME_STEP=0.4;
-MAX_TIME=1;
+TIME_STEP=0.5;
+MAX_TIME=10;
 Alpha_ret=10;
 Beta_ret=4.000;
 Theta_s=0.287;
 Theta_r=0.075;
 
 
-INIT_PRESSURE=1;
-INIT_H0=0;
+INIT_PRESSURE=0;
+INIT_H0=1;
 
 P_INIT=-5000.00;
 H_INIT=-5000.00;
