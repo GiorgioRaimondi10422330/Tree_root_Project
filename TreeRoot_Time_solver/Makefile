@@ -21,6 +21,7 @@ all: library
 	$(MAKE) -C src/4_Initial_P0
 	$(MAKE) -C src/5_Init_No_Root
 	$(MAKE) -C src/6_Draining_Root
+	$(MAKE) -C src/8_Competing
 
 help:
 	@echo "make all: build the library and complile the test case"
@@ -49,6 +50,7 @@ clean:
 	$(MAKE) -C src/4_Initial_P0 clean
 	$(MAKE) -C src/5_Init_No_Root clean
 	$(MAKE) -C src/6_Draining_Root clean
+	$(MAKE) -C src/8_Competing clean
 
 distclean: clean
 	$(MAKE) -C include distclean
@@ -58,6 +60,7 @@ distclean: clean
 	$(MAKE) -C src/4_Initial_P0 distclean
 	$(MAKE) -C src/5_Init_No_Root distclean
 	$(MAKE) -C src/6_Draining_Root distclean
+	$(MAKE) -C src/8_Competing distclean
 
 fast:	
 	$(MAKE) -C include fastclean

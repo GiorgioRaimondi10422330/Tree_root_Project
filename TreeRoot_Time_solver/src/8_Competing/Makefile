@@ -1,0 +1,48 @@
+# Including generic Makefile.inc
+include ../../../Makefile.inc
+
+
+LIB= -lroot_problem3d1d -lgetfem 
+LIBDIR= -L../../lib -L/opt/getfem/lib
+INC_DIR= -I../../include  -I/opt/getfem/include
+
+
+
+.PHONY= help all main run clean distclean fastclean run2
+.DEFAUL_GOAL: all
+
+all: main
+	@echo 
+	@echo "8_Competing"
+	@echo
+
+help:
+	@echo "make help: ------- Prints this help"
+	@echo "make all: -------- Compile and prints help"
+	@echo "make main: ------- Compile the program"
+	@echo "make run: -------- Run the executable with input.param file"
+	@echo "make clean: ------ Cleans all object files"
+	@echo "make distclean: -- Cleans all object files and remove executable"
+
+main.o: main.cpp
+	$(CXX) $(STDFLAG) -D=M3D1D_VERBOSE_ $(INC_DIR) $(OPTFLAGS) $(WARN)  -o main.o -c main.cpp
+
+main: main.o
+	$(CXX) $(LIBDIR) -o main main.o  $(LIB)
+
+run: main
+	./main input.param
+
+run2: main
+	./main input2.param
+
+clean:
+	$(RM) main.o *~
+
+distclean: clean
+	$(RM) main
+
+fastclean: 
+	$(RM) main
+
+
