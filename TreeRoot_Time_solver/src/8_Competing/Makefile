@@ -1,19 +1,17 @@
 # Including generic Makefile.inc
 include ../../../Makefile.inc
 
-
-LIB= -lroot_problem3d1d -lgetfem 
-LIBDIR= -L../../lib -L/opt/getfem/lib
-INC_DIR= -I../../include  -I/opt/getfem/include
-
+LIB= $(TIME_ROOT_LIBRARY)
+LIBDIR= $(TIME_ROOT_LIBRARY_DIR)
+INC_DIR= $(TIME_ROOT_INCLUDE)
 
 
-.PHONY= help all main run clean distclean fastclean run2
+.PHONY= help all main run clean distclean fastclean
 .DEFAUL_GOAL: all
 
 all: main
 	@echo 
-	@echo "8_Competing"
+	@echo "6_Draining_Root"
 	@echo
 
 help:
@@ -32,9 +30,6 @@ main: main.o
 
 run: main
 	./main input.param
-
-run2: main
-	./main input2.param
 
 clean:
 	$(RM) main.o *~
