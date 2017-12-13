@@ -1,14 +1,13 @@
 # Project Path (this file path)
-PROJECT_DIR = /u/raimondi/Tree_root_Project
-
+#PROJECT_DIR = /u/raimondi/Tree_root_Project
+PROJECT_DIR = /media/More_SPACE/Tree_root_Project
 # Path to GetFEM library
-GETFEM_LIB_DIR     = $(mkGetfemLib)
+#GETFEM_LIB_DIR     = $(mkGetfemLib)
+GETFEM_LIB_DIR     = /opt/getfem/lib
 # Path to GetFEM includes
-GETFEM_INC_DIR     = $(mkGetfemInc)
-# Path to Boost Library 
-BOOST_LIB_DIR = $(mkBoostLib)
-# Path to Boost includes
-BOOST_INC_DIR = $(mkBoostInc)
+#GETFEM_INC_DIR     = $(mkGetfemInc)
+GETFEM_INC_DIR     = /opt/getfem/include
+
 
 
 ### NOW DO NOT EDIT ANYTHING ###
