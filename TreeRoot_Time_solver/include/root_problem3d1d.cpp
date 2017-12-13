@@ -591,7 +591,7 @@ root_problem3d1d::assembly_mat(bool Q0)
 		// Coefficient \pi^2*Ri'^4/\kappa_v *(1+Ci^2*Ri^2) //Adaptation to the curve model
 		vector_type ci(mf_coefvi[i].nb_dof());
 		for(size_type j=0; j<mf_coefvi[i].nb_dof(); ++j){
-			ci[j]=pi*pi*Ri*Ri*Ri*Ri/kvi*(1+(r_param.Curv())[i][j]*(r_param.Curv())[i][j]*Ri*Ri);
+			ci[j]=pi*pi*Ri*Ri*Ri*Ri/kvi*(1+(r_param.Curv())[i][j]*(r_param.Curv())[i][j]*Ri*Ri)+r_param.KF()*pi*Ri*Ri;
 		}
 		// Allocate temp local matrices
 		sparse_matrix_type Mvvi(mf_Uvi[i].nb_dof(), mf_Uvi[i].nb_dof());

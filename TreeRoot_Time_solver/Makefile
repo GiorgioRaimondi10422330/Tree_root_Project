@@ -76,7 +76,7 @@ run5:
 	$(MAKE) -C src/5_Draining_Root run
 
 run6:
-	$(MAKE) -C src/6_Competing distclean
+	$(MAKE) -C src/6_Competing run
 
 	
 	

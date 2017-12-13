@@ -14,29 +14,18 @@ BOOST_INC_DIR = $(mkBoostInc)
 ### NOW DO NOT EDIT ANYTHING ###
 
 
-# Path to Curved M3D1D include
-ROOT_INC_DIR = $(PROJECT_DIR)/TreeRoot_Coupled_Model/include
-# Path to Curved M3D1D library
-ROOT_LIB_DIR = $(PROJECT_DIR)/TreeRoot_Coupled_Model/lib
-<<<<<<< HEAD
+
+
 # Path to time root include
 TIME_ROOT_INC_DIR= $(PROJECT_DIR)/TreeRoot_Time_solver/include
 # Path to time root library
 TIME_ROOT_LIB_DIR= $(PROJECT_DIR)/TreeRoot_Time_solver/lib
-=======
 # Path to Curved M3D1D include
 TIME_ROOT_INC_DIR = $(PROJECT_DIR)/TreeRoot_Time_solver/include
 # Path to Curved M3D1D library
 TIME_ROOT_LIB_DIR = $(PROJECT_DIR)/TreeRoot_Time_solver/lib
->>>>>>> f06168bb3a3ce2fa304ad5ffa9ef286c53cd6ed5
 
 
-# Specific Curved M3D1D Include list
-ROOT_INCLUDE =-I$(ROOT_INC_DIR) -I$(GETFEM_INC_DIR) 
-# Specific Curved M3D1D Library list
-ROOT_LIBRARY =   -lroot_problem3d1d -lgetfem
-# Specific Curved M3D1D Library directory
-ROOT_LIBRARY_DIR =  -L$(ROOT_LIB_DIR) -L$(GETFEM_LIB_DIR)
 # Specific Curved M3D1D Include list TIME
 TIME_ROOT_INCLUDE =-I$(TIME_ROOT_INC_DIR) -I$(GETFEM_INC_DIR) 
 # Specific Curved M3D1D Library list TIME

@@ -64,6 +64,8 @@ struct root_param3d1d : public param3d1d {
 	scalar_type p0_;
 	// Initial Hydraulic Head
 	scalar_type h0_;
+	// Friction Term
+	scalar_type KF_;
 	// Mesh tangent versor
 	vector<vector_type> lambdax_;
 	vector<vector_type> lambday_;
@@ -158,6 +160,7 @@ struct root_param3d1d : public param3d1d {
 			scalar_type ktval = FILE_.real_value("Kt"); 
 			scalar_type Qval  = FILE_.real_value("Q"); 
 			scalar_type kvval = FILE_.real_value("Kv");
+			KF_=FILE_.real_value("KF");
 			Gamma_ = FILE_.real_value("Gamma");
 			rho_= FILE_.real_value("rho","density of the fluid");
 			g_= FILE_.real_value("g","Gravity accelleration");
@@ -178,11 +181,13 @@ struct root_param3d1d : public param3d1d {
 			rho_= FILE_.real_value("rho","density of the fluid");
 			g_= FILE_.real_value("g","Gravity accelleration");
 			// Compute the dimenless params
-			kt_.assign(dof_datat, k_/mu_*P_/U_/d_/rho_/g_);//---------------------------Tenuto conto di rho g------------
+			kt_.assign(dof_datat, k_/mu_*P_/U_/d_/rho_/g_);
 			for (auto r : R_){ // C++11-only!
 				kv_.emplace_back(pi/2.0/(Gamma_+2.0)/mu_*P_*d_/U_*r*r*r*r);
 				Q_.emplace_back(2.0*pi*Lp_*P_/U_*r/rho_/g_);
 			}
+			scalar KF=FILE_.real_value("KF");
+			KF_=KF*U_/P_/d_;
 		}
 		A_ret_ = FILE_.real_value("A_ret","Costant for non linear conductivity term");
 		gamma_ret_ =FILE_.real_value("Gamma_ret","Exponent for non linear conductivity term");
@@ -264,6 +269,8 @@ struct root_param3d1d : public param3d1d {
 	inline scalar_type & kt(size_type i){return kt_[i];}
 	//! Get conductivity in the tissue vector
 	inline vector_type & kt(void){return kt_;}
+	//! Get friction term for the vessel
+	inline vector_type & KF(void){return KF_;}
 	//! Get pressure initial condition
 	inline scalar_type & p0(void){return p0_;}
 	//! Get hydraulic head initial condition
