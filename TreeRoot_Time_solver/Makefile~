@@ -71,13 +71,5 @@ run3:
 
 run4:
 	$(MAKE) -C src/4_Init_No_Root run
-
-run5:
-	$(MAKE) -C src/5_Draining_Root run
-
-run6:
-	$(MAKE) -C src/6_Competing distclean
-
-	
 	
 
