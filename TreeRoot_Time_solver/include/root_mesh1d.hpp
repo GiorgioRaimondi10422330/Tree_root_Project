@@ -648,12 +648,6 @@ import_pts_file(
 			lz_b.push_back(lz_t/lmod);
 		} /* end of inner for */
 
-		cout<<"Curvatura Ramo\n";
-		for(size_type kk=0; kk<Curv_b.size();kk++){
-			cout<<" "<<Curv_b[kk];
-		}
-		cout<<"\n\n";
-
 		Curv.push_back(Curv_b);
 		lx.push_back(lx_b);
 		ly.push_back(ly_b);

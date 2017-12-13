@@ -9,7 +9,7 @@ INC_DIR= $(TIME_ROOT_INCLUDE)
 
 all: main
 	@echo 
-	@echo "4_Init_No_Root"
+	@echo "4_Init_No_Root Compiled"
 	@echo
 
 help:

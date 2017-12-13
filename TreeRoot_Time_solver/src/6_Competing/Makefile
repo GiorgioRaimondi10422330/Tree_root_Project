@@ -11,7 +11,7 @@ INC_DIR= $(TIME_ROOT_INCLUDE)
 
 all: main
 	@echo 
-	@echo "6_Competing"
+	@echo "6_Competing Compiled"
 	@echo
 
 help:

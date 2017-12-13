@@ -11,7 +11,7 @@ INC_DIR= $(TIME_ROOT_INCLUDE)
 
 all: main
 	@echo 
-	@echo "5_Draining_Root"
+	@echo "5_Draining_Root Compiled"
 	@echo
 
 help:

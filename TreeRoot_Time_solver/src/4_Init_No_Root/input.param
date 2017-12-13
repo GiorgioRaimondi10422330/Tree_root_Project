@@ -24,7 +24,7 @@ CURVE_PROBLEM = 0;
 % Flag to import the curve file (Remember to ENABLE CURVE_PROBLEM)
 IMPORT_CURVE = 0;
 % Output directory
-OUTPUT     = '/media/More_SPACE/vtk_P0/';
+OUTPUT     = './vtk/';
 %===================================
 %  MESH
 %===================================

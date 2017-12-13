@@ -141,15 +141,10 @@ struct root_param3d1d : public param3d1d {
 				
 				lambdax_[b].assign(dofi,lx_temp[b]);
 				lambday_[b].assign(dofi,ly_temp[b]);
-				lambdaz_[b].assign(dofi,lz_temp[b]);
-				
+				lambdaz_[b].assign(dofi,lz_temp[b]);				
 			}
 		} else {
 			rasm_curve_parameter(mf_datavi,Curv_,lambdax_,lambday_,lambdaz_);
-			cout<<"Curvatura = \n";
-			for(size_type i=0; i<mf_datavi[0].nb_dof();i++)
-				cout<<" "<<Curv_[0][i];
-			cout<<endl<<endl;
 		}
 
 		#ifdef M3D1D_VERBOSE_
@@ -186,7 +181,7 @@ struct root_param3d1d : public param3d1d {
 				kv_.emplace_back(pi/2.0/(Gamma_+2.0)/mu_*P_*d_/U_*r*r*r*r);
 				Q_.emplace_back(2.0*pi*Lp_*P_/U_*r/rho_/g_);
 			}
-			scalar KF=FILE_.real_value("KF");
+			scalar_type KF=FILE_.real_value("KF");
 			KF_=KF*U_/P_/d_;
 		}
 		A_ret_ = FILE_.real_value("A_ret","Costant for non linear conductivity term");
@@ -265,12 +260,12 @@ struct root_param3d1d : public param3d1d {
 	inline scalar_type rho(void){ return rho_;}
 	//! Get gravity accelleration
 	inline scalar_type g(void){return g_;}
+	//! Get friction term for the vessel
+	inline scalar_type & KF(void){return KF_;}
 	//! Get conductivity in the tissue value
 	inline scalar_type & kt(size_type i){return kt_[i];}
 	//! Get conductivity in the tissue vector
 	inline vector_type & kt(void){return kt_;}
-	//! Get friction term for the vessel
-	inline vector_type & KF(void){return KF_;}
 	//! Get pressure initial condition
 	inline scalar_type & p0(void){return p0_;}
 	//! Get hydraulic head initial condition

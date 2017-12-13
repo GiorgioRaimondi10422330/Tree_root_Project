@@ -38,7 +38,7 @@ NOISED_T   = '0';
 % Path to import the 3d mesh
 MESH_FILET = ' '; 
 % Path to import the 1d list of points
-MESH_FILEV = './network2.pts'; 
+MESH_FILEV = './network.pts'; 
 % Path to import the radius of branches
 RFILE='./radius.pts';
 %===================================

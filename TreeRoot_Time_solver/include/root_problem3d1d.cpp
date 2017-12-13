@@ -586,12 +586,12 @@ root_problem3d1d::assembly_mat(bool Q0)
 
 		if(i>0) shift += mf_Uvi[i-1].nb_dof();
 		scalar_type Ri = r_param.R(mimv, i);
-		cout<<"R["<<i<<"]="<<Ri<<"\n";
 		scalar_type kvi= r_param.kv(mimv, i);
+		scalar_type KF=r_param.KF();
 		// Coefficient \pi^2*Ri'^4/\kappa_v *(1+Ci^2*Ri^2) //Adaptation to the curve model
 		vector_type ci(mf_coefvi[i].nb_dof());
 		for(size_type j=0; j<mf_coefvi[i].nb_dof(); ++j){
-			ci[j]=pi*pi*Ri*Ri*Ri*Ri/kvi*(1+(r_param.Curv())[i][j]*(r_param.Curv())[i][j]*Ri*Ri)+r_param.KF()*pi*Ri*Ri;
+			ci[j]=pi*pi*Ri*Ri*Ri*Ri/kvi*(1+(r_param.Curv())[i][j]*(r_param.Curv())[i][j]*Ri*Ri)+KF*pi*Ri*Ri;
 		}
 		// Allocate temp local matrices
 		sparse_matrix_type Mvvi(mf_Uvi[i].nb_dof(), mf_Uvi[i].nb_dof());
@@ -858,10 +858,6 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 		INIT_P0=PARAM.int_value("INIT_PRESSURE");
 	}
 
-
-	// Preparing vectors dimension
-   	cout<<" tempo= "<<tempo<<" , INIT_P0= "<<INIT_P0<<"\n";
-
     gmm::resize(Pt_data,dof.coeft()); gmm::clear(Pt_data);
 
     //Assembling conductivity non linear term
@@ -874,10 +870,9 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 
     	for(size_type DOF=0; DOF<dof.coeft(); DOF++){
     		Ct[DOF]=(A+pow(abs(Pt_data[DOF])/rho/g, gam)) / A ;
-		Conductivity[DOF]=kt*A/(A+pow(abs(Pt_data[DOF])/rho/g, gam)) ;
+			Conductivity[DOF]=kt*A/(A+pow(abs(Pt_data[DOF])/rho/g, gam)) ;
     	}
     	asm_tissue_non_linear_darcy(NLMtt,mimt,mf_Ut,mf_coeft,Ct,kt,iter);
-    	cout<<"1/Kt    Valore Nuovo "<<Ct[0]/kt<<" Valore Vecchio "<<1.0/kt<<"\n";
     	if(tempo!=0){
 	    	for(size_type DOF=0;DOF<dof.coeft();DOF++){
 	    		//Bt=- a*(Ts-Tr)*b*|psi|^(b-1)/(a+|psi|^b)^2*sign(psi)
@@ -886,7 +881,6 @@ root_problem3d1d::assembly_nonlinear_mat(size_type iter, size_type tempo)
 	    		Porosity[DOF]=(Ts-Tr)*al/(al+pow(abs(Pt_data[DOF])/rho/g, be))+Tr;
 	    	}
 	    	asm_tissue_non_linear_richards(NLRtt,NLFtt,mimt, mf_Pt,mf_coeft,Pt_Prev,Bt,dT*rho*g);
-	    	cout<<"Poros   Valore Nuovo "<<Porosity[0]<<" Valore Vecchio "<<Ts<<"\n";
 	    }
 	}
 

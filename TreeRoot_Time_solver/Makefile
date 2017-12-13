@@ -52,6 +52,7 @@ distclean: clean
 	$(MAKE) -C src/4_Init_No_Root distclean
 	$(MAKE) -C src/5_Draining_Root distclean
 	$(MAKE) -C src/6_Competing distclean
+	$(RM) -r ./doc
 
 doc:
 	install -d doc

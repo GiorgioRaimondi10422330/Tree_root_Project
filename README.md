@@ -56,7 +56,7 @@ $ export LD_LIBRARY_PATH=/home/...path/to.../getfem/lib
 ### Installation
 Build the whole project with:
 ``` 
-$ make
+$ make install
 ``` 
 It first build the (static) library "libproblem3d1d" by calling
 the Makefile in `include/`:
@@ -67,7 +67,7 @@ Then, it calls the inner makefiles provided for all examples.
 
 It is also possible to build a single example, e.g. "1_LinearSingleBranch", with:
 ``` 
-$ make library
+$(MAKE) -C TreeRoot_Time_solver library
 
 $(MAKE) -C TreeRoot_Time_solver/src/1_LinearSingleBranch
 ``` 
@@ -116,7 +116,8 @@ $ evince TreeRoot_Time_solver/doc/latex/refman.pdf
 ## MAKE OPTIONS
 All examples are provided with a Makefile which accepts the following
 options:
--  all       : makes the example
+-  all       : print help
+-  install   : install the library and compiles the example
 -  clean     : as it says
 -  distclean : clean and also deletes temporary file and local doc directory
 Being "all" the first target of the makefile, to compile the examples is
@@ -124,10 +125,20 @@ sufficient to type make.
 In addition the external Makefile (./Makefile) has the following options:
 -  doc       : produces the documentation (html, tex)
 -  pdf       : produces a guide in portable format
-- library    : build the library from files in include/
+-  run1      : run the first example
+-  run2      : run the second example
+-  run3      : run the third example
+-  run4      : run the fourth example
+-  run5      : run the fifth example
+-  run6      : run the sixth example
 
 ## RUN EXAMPLES
-To run a specif example, go to the related subdirectory
+To run a specif example simply execute
+``` 
+$ make run3
+``` 
+where the number indicates the number of the example.
+Alternatively go to the related subdirectory
 ``` 
 $ cd TreeRoot_Time_solver/src/3_Initial_P0
 ``` 

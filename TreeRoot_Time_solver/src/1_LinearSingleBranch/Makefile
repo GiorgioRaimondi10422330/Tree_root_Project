@@ -3,28 +3,16 @@ include ../../../Makefile.inc
 
 LIB= $(TIME_ROOT_LIBRARY)
 LIBDIR= $(TIME_ROOT_LIBRARY_DIR)
-<<<<<<< HEAD
 INC_DIR= $(TIME_ROOT_INCLUDE)
 
-.PHONY= help all main run clean distclean fastclean
-=======
-.PHONY= help all main run clean distclean fastclean
+.PHONY= help all main run clean distclean
 INC_DIR= $(TIME_ROOT_INCLUDE)
->>>>>>> f06168bb3a3ce2fa304ad5ffa9ef286c53cd6ed5
 .DEFAUL_GOAL: all
 
 all: main
 	@echo 
 	@echo "1_LinearSingleBranch test case compiled"
 	@echo
-
-help:
-	@echo "make help: ------- Prints this help"
-	@echo "make all: -------- Compile and prints help"
-	@echo "make main: ------- Compile the program"
-	@echo "make run: -------- Run the executable with input.param file"
-	@echo "make clean: ------ Cleans all object files"
-	@echo "make distclean: -- Cleans all object files and remove executable"
 
 main.o: main.cpp
 	$(CXX) $(STDFLAG) -D=M3D1D_VERBOSE_ $(INC_DIR) $(OPTFLAGS) $(WARN)  -o main.o -c main.cpp
