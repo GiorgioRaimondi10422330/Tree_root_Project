@@ -24,7 +24,7 @@ CURVE_PROBLEM = 1;
 % Flag to import the curve file (Remember to ENABLE CURVE_PROBLEM)
 IMPORT_CURVE = 0;
 % Output directory
-OUTPUT     = '/u/archive/laureandi/raimondi/Coupled2/';
+OUTPUT     = '/u/archive/laureandi/raimondi/Coupled3/';
 %===================================
 %  MESH
 %===================================
@@ -121,9 +121,9 @@ minERR= 0.001;
 
 SOLVE_TIME_STEP=1;
 VTK_EXPORT_TIME=1;
-EXPORT_STEP=25;
+EXPORT_STEP=3;
 TIME_STEP=1;
-MAX_TIME=600;
+MAX_TIME=75;
 Alpha_ret=10;
 Beta_ret=4.000;
 Theta_s=0.287;

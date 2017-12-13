@@ -27,7 +27,7 @@ module load getfem
 module load qhull
 module load boost
 
-./main ./input.param  > /u/archive/laureandi/raimondi/Coupled2/Remoto.txt 2>&1
+./main ./input.param  > /u/archive/laureandi/raimondi/Coupled3/Remoto.txt 2>&1
 
 
 #---------------------------------------------------------------------#
